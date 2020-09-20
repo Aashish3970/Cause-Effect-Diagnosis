@@ -326,47 +326,50 @@ const char *gateType(int Type)
     return "XNOR";
 }
 
-void createXORbranch(NODE *graph, LIST * faninList, FILE * fout, int newNodeType, int nodeToReplace,int Max)
+void createXORbranch(NODE *graph, LIST *faninList, FILE *fout, int newNodeType, int nodeToReplace, int Max)
 {
   LIST *temp1;
-  temp1=faninList;
+  temp1 = faninList;
   int fanInArray[20];
-  int j=0,k=0,count=0, increase=2, i=0;
-  
-  while(temp1 !=NULL)
+  int j = 0, k = 0, count = 0, increase = 2, i = 0;
+
+  while (temp1 != NULL)
   {
-    fanInArray[j]= temp1->id;
-    temp1= temp1->next;
-    j=j+1;
+    fanInArray[j] = temp1->id;
+    temp1 = temp1->next;
+    j = j + 1;
   }
-  count=j;
-  printf("The count is %d\n",count);
-  for(j=0; j<count; j++){
-    
-    if (graph[fanInArray[j]].Nfi ==0)
+  count = j;
+  printf("The count is %d\n", count);
+  for (j = 0; j < count; j++)
+  {
+
+    if (graph[fanInArray[j]].Nfi == 0)
     {
-        fanInArray[j] = fanInArray[j];
+      fanInArray[j] = fanInArray[j];
     }
-    else if(graph[fanInArray[j]].Type ==10)
+    else if (graph[fanInArray[j]].Type == 10)
     {
-        if(graph[graph[fanInArray[j]].Fin->id].Nfi==0)
-        {
-          fanInArray[j] = graph[fanInArray[j]].Fin->id;
-        }
-        else
-        {
-          fanInArray[j]= graph[fanInArray[j]].Fin->id +Max;
-        }
-        
+      if (graph[graph[fanInArray[j]].Fin->id].Nfi == 0)
+      {
+        fanInArray[j] = graph[fanInArray[j]].Fin->id;
+      }
+      else
+      {
+        fanInArray[j] = graph[fanInArray[j]].Fin->id + Max;
+      }
     }
   }
-  
-  i=fanInArray[k];
-  while(k<count-1){
-    j= fanInArray[k+1];
-    if (k==count-2) fprintf(fout,"%d= %s(%d, %d)\n",nodeToReplace+Max,  gateType(newNodeType),i,j); 
-    else fprintf(fout,"%d= %s(%d, %d)\n",2 * Max + Max + increase,  gateType(newNodeType),i,j);
-    i= 2*Max +Max +increase;
+
+  i = fanInArray[k];
+  while (k < count - 1)
+  {
+    j = fanInArray[k + 1];
+    if (k == count - 2)
+      fprintf(fout, "%d= %s(%d, %d)\n", nodeToReplace + Max, gateType(newNodeType), i, j);
+    else
+      fprintf(fout, "%d= %s(%d, %d)\n", 2 * Max + Max + increase, gateType(newNodeType), i, j);
+    i = 2 * Max + Max + increase;
     increase++;
     k++;
   }
@@ -423,8 +426,8 @@ void copyFile(FILE *fisc, NODE *graph, FILE *fout, int Max, int Npo, int nodeToR
 
         strcat(inputs, add);
         strcat(inputs_2, add_2);
-        count +=1;
-        
+        count += 1;
+
         if (temp->next != NULL)
         {
           strcat(inputs, ",");
@@ -432,11 +435,11 @@ void copyFile(FILE *fisc, NODE *graph, FILE *fout, int Max, int Npo, int nodeToR
         }
         temp = temp->next;
       }
-      
-      if (i == nodeToReplace && graph[nodeToReplace].Nfi >2 && (newNodeType == 6 || newNodeType ==7))
+
+      if (i == nodeToReplace && graph[nodeToReplace].Nfi > 2 && (newNodeType == 6 || newNodeType == 7))
       {
-        fprintf(fout, "%d = %s(%s)\n",i,gateType(graph[i].Type),inputs);
-        createXORbranch(graph,graph[nodeToReplace].Fin, fout, newNodeType,nodeToReplace, Max);
+        fprintf(fout, "%d = %s(%s)\n", i, gateType(graph[i].Type), inputs);
+        createXORbranch(graph, graph[nodeToReplace].Fin, fout, newNodeType, nodeToReplace, Max);
       }
       else
       {
@@ -446,8 +449,6 @@ void copyFile(FILE *fisc, NODE *graph, FILE *fout, int Max, int Npo, int nodeToR
         else
           fprintf(fout, "%d = %s(%s)\n", i + Max, gateType(newNodeType), inputs_2);
       }
-      
-      
     }
 
     if (graph[i].Type != 0)
