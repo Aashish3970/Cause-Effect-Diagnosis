@@ -328,16 +328,11 @@ const char *gateType(int Type)
 
 void createXORbranch(NODE *graph, LIST * faninList, FILE * fout, int newNodeType, int nodeToReplace,int Max)
 {
-  int i=0;
-  int increase=2;
   LIST *temp1;
   temp1=faninList;
-  // int second;
-  // second= temp1->id;
-  // temp1= temp1->next;
   int fanInArray[20];
-  int j=0,k=0;
-  int count=0;
+  int j=0,k=0,count=0, increase=2, i=0;
+  
   while(temp1 !=NULL)
   {
     fanInArray[j]= temp1->id;
@@ -347,7 +342,7 @@ void createXORbranch(NODE *graph, LIST * faninList, FILE * fout, int newNodeType
   count=j;
   printf("The count is %d\n",count);
   for(j=0; j<count; j++){
-    // printf("%d\n",fanInArray[count]);
+    
     if (graph[fanInArray[j]].Nfi ==0)
     {
         fanInArray[j] = fanInArray[j];
