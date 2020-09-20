@@ -307,10 +307,10 @@ int countPO(NODE *graph, int Max)
 }
 
 const char *gateType(int Type)
-{ 
-  if (Type ==8)
+{
+  if (Type == 8)
     return "BUFF";
-  else if (Type ==9)
+  else if (Type == 9)
     return "NOT";
   else if (Type == 2)
     return "AND";
@@ -326,8 +326,60 @@ const char *gateType(int Type)
     return "XNOR";
 }
 
+void createXORbranch(NODE *graph, LIST * faninList, FILE * fout, int newNodeType, int nodeToReplace,int Max)
+{
+  int i=0;
+  int increase=2;
+  LIST *temp1;
+  temp1=faninList;
+  // int second;
+  // second= temp1->id;
+  // temp1= temp1->next;
+  int fanInArray[20];
+  int j=0,k=0;
+  int count=0;
+  while(temp1 !=NULL)
+  {
+    fanInArray[j]= temp1->id;
+    temp1= temp1->next;
+    j=j+1;
+  }
+  count=j;
+  printf("The count is %d\n",count);
+  for(j=0; j<count; j++){
+    // printf("%d\n",fanInArray[count]);
+    if (graph[fanInArray[j]].Nfi ==0)
+    {
+        fanInArray[j] = fanInArray[j];
+    }
+    else if(graph[fanInArray[j]].Type ==10)
+    {
+        if(graph[graph[fanInArray[j]].Fin->id].Nfi==0)
+        {
+          fanInArray[j] = graph[fanInArray[j]].Fin->id;
+        }
+        else
+        {
+          fanInArray[j]= graph[fanInArray[j]].Fin->id +Max;
+        }
+        
+    }
+  }
+  
+  i=fanInArray[k];
+  while(k<count-1){
+    j= fanInArray[k+1];
+    if (k==count-2) fprintf(fout,"%d= %s(%d, %d)\n",nodeToReplace+Max,  gateType(newNodeType),i,j); 
+    else fprintf(fout,"%d= %s(%d, %d)\n",2 * Max + Max + increase,  gateType(newNodeType),i,j);
+    i= 2*Max +Max +increase;
+    increase++;
+    k++;
+  }
+}
+
 void copyFile(FILE *fisc, NODE *graph, FILE *fout, int Max, int Npo, int nodeToReplace, int newNodeType)
 {
+  fout = fopen("c17_erroneous.bench", "w");
   int i = 0, count = 0, value = 0;
   LIST *temp;
   char inputs[1000] = "";
@@ -336,24 +388,18 @@ void copyFile(FILE *fisc, NODE *graph, FILE *fout, int Max, int Npo, int nodeToR
   char add_2[10];
   char xor_outputs[1000] = "";
   char add_3[10];
-  fprintf(fout,"#BenchFile\n");
+  fprintf(fout, "#BenchFile\n");
   for (i = 0; i <= Max; i++)
   {
     if (graph[i].Type != 0)
     {
       if (graph[i].Nfi == 0)
         fprintf(fout, "INPUT(%d)\n", i);
-
-      // if (graph[i].Nfo == 0)
-      // {
-      //   fprintf(fout, "OUTPUT(%d)\n", i);
-      //   fprintf(fout, "OUTPUT(%d)\n", i + Max);
-      // }
     }
   }
   for (i = 0; i <= Max; i++)
   {
-    if (graph[i].Type==8 || graph[i].Type==9||graph[i].Type == 2 || graph[i].Type == 3 || graph[i].Type == 4 || graph[i].Type == 5 || graph[i].Type == 6 || graph[i].Type == 7)
+    if (graph[i].Type == 8 || graph[i].Type == 9 || graph[i].Type == 2 || graph[i].Type == 3 || graph[i].Type == 4 || graph[i].Type == 5 || graph[i].Type == 6 || graph[i].Type == 7)
     {
       temp = NULL;
       bzero(inputs, 1000);
@@ -363,20 +409,27 @@ void copyFile(FILE *fisc, NODE *graph, FILE *fout, int Max, int Npo, int nodeToR
       {
         bzero(add, 10);
         bzero(add_2, 10);
-        if(graph[temp->id].Type==10) sprintf(add, "%d", graph[temp->id].Fin->id);
-        else sprintf(add, "%d", temp->id);
+        if (graph[temp->id].Type == 10)
+          sprintf(add, "%d", graph[temp->id].Fin->id);
+        else
+          sprintf(add, "%d", temp->id);
 
         if (graph[temp->id].Nfi == 0)
           sprintf(add_2, "%d", temp->id);
-        else if  (graph[temp->id].Type==10) 
+        else if (graph[temp->id].Type == 10)
         {
-          if(graph[graph[temp->id].Fin->id].Nfi==0) sprintf(add_2,"%d",graph[temp->id].Fin->id); //added later
-          else sprintf(add_2,"%d",graph[temp->id].Fin->id +Max);
+          if (graph[graph[temp->id].Fin->id].Nfi == 0)
+            sprintf(add_2, "%d", graph[temp->id].Fin->id); //added later
+          else
+            sprintf(add_2, "%d", graph[temp->id].Fin->id + Max);
         }
-        else sprintf(add_2, "%d", temp->id + Max);
+        else
+          sprintf(add_2, "%d", temp->id + Max);
 
         strcat(inputs, add);
         strcat(inputs_2, add_2);
+        count +=1;
+        
         if (temp->next != NULL)
         {
           strcat(inputs, ",");
@@ -384,13 +437,24 @@ void copyFile(FILE *fisc, NODE *graph, FILE *fout, int Max, int Npo, int nodeToR
         }
         temp = temp->next;
       }
-      fprintf(fout, "%d = %s(%s)\n", i, gateType(graph[i].Type), inputs);
-      if (i != nodeToReplace)
-        fprintf(fout, "%d = %s(%s)\n", i + Max, gateType(graph[i].Type), inputs_2);
+      
+      if (i == nodeToReplace && graph[nodeToReplace].Nfi >2 && (newNodeType == 6 || newNodeType ==7))
+      {
+        fprintf(fout, "%d = %s(%s)\n",i,gateType(graph[i].Type),inputs);
+        createXORbranch(graph,graph[nodeToReplace].Fin, fout, newNodeType,nodeToReplace, Max);
+      }
       else
-        fprintf(fout, "%d = %s(%s)\n", i + Max, gateType(newNodeType), inputs_2);
+      {
+        fprintf(fout, "%d = %s(%s)\n", i, gateType(graph[i].Type), inputs);
+        if (i != nodeToReplace)
+          fprintf(fout, "%d = %s(%s)\n", i + Max, gateType(graph[i].Type), inputs_2);
+        else
+          fprintf(fout, "%d = %s(%s)\n", i + Max, gateType(newNodeType), inputs_2);
+      }
+      
+      
     }
-    
+
     if (graph[i].Type != 0)
     {
       if (graph[i].Nfo == 0)
@@ -406,6 +470,78 @@ void copyFile(FILE *fisc, NODE *graph, FILE *fout, int Max, int Npo, int nodeToR
       }
     }
   }
-  fprintf(fout,"OUTPUT(%d)\n",2*Max+Max+1);
+  fprintf(fout, "OUTPUT(%d)\n", 2 * Max + Max + 1);
   fprintf(fout, "%d = OR(%s)\n", 2 * Max + Max + 1, xor_outputs);
+  fclose(fout);
+}
+
+int readTestFile(FILE *ftest, FILE *patternFile, int Max)
+{
+  char fline[Mlin], scan1[50], inputPattern[1000], scan3[50], *i, skipUpto[100];
+  bzero(scan1, 50);
+  bzero(inputPattern, 1000);
+  bzero(scan3, 50);
+  bzero(fline, Mlin);
+  int NtestPatterns = 0;
+
+  sprintf(skipUpto, "%d /%d", 2 * Max + Max + 1, 0);
+  while (strncmp(fline, skipUpto, strlen(skipUpto)) != 0)
+  {
+    fgets(fline, Mlin, ftest);
+  }
+
+  while (!feof(ftest))
+  {
+    fgets(fline, Mlin, ftest);
+
+    sscanf(fline, "%s %s %s", scan1, inputPattern, scan3);
+
+    i = inputPattern;
+    while (*i != '\0')
+    {
+      if (*i == 'x')
+      {
+        const int randomBit = rand() % 2;
+        fprintf(patternFile, "%d", randomBit);
+      }
+      else
+        fprintf(patternFile, "%c", *i);
+      i++;
+    }
+    fprintf(patternFile, "\n");
+    NtestPatterns += 1;
+  }
+  return NtestPatterns;
+}
+
+void selectRandomPattern(FILE *patternFile, FILE *testSet1, int NtestPattern, int Npi)
+{
+  char line[Mlin], testPattern[1000];
+  bzero(testPattern, 1000);
+  srand(time(0));
+  int targetLine = 0;
+  targetLine = (rand() % NtestPattern + 1);
+
+  while (targetLine < 1)
+  {
+    fgets(line, Npi + 1, patternFile);
+    targetLine--;
+  }
+  fgets(line, Npi + 1, patternFile);
+  sscanf(line, "%s", testPattern);
+  fprintf(testSet1, "%s\n", testPattern);
+}
+
+void run(FILE *patternFile, FILE *ftest, FILE *testSet1, int Npi, int Max, int NtestPatterns)
+{
+  system("/opt/net/apps/atalanta/atalanta -A -f /home/grad/siu856300090/Downloads/ECE524/Project1/faultFile.flt /home/grad/siu856300090/Downloads/ECE524/Project1/c17_erroneous.bench");
+  patternFile = fopen("TestPatterns.test", "w");
+  ftest = fopen("c17_erroneous.test", "r");
+  NtestPatterns = readTestFile(ftest, patternFile, Max);
+  fclose(ftest);
+  fclose(patternFile);
+  patternFile = fopen("TestPatterns.test", "r");
+
+  selectRandomPattern(patternFile, testSet1, NtestPatterns, Npi);
+  fclose(patternFile);
 }

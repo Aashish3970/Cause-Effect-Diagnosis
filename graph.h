@@ -86,7 +86,11 @@ int countPO(NODE*,int);
 void makeNewISC(NODE *, NODE *,int,int);
 
 void copyFile(FILE *, NODE *,FILE *, int,int,int,int );
+int readTestFile(FILE *, FILE*,int);
 
+void selectRandomPattern(FILE *,FILE *, int,int );
+void run(FILE *, FILE* , FILE *, int , int , int );
+void createXORbranch(NODE *,LIST *, FILE *,int, int,int);
 /***************************************************************************************************************************
  PATTERN Structure Functions
 ****************************************************************************************************************************/
