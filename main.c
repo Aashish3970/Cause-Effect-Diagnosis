@@ -31,10 +31,10 @@ void main(int argc, char **argv)
     fclose(ffau);
     printf("max is %d", Max);
     testSet1 = fopen("testSet1.test", "w");
-    copyFile(fisc, graph, fout, Max,Npo,815, XNOR);
-    // fclose(fout);
-
-    // system("/opt/net/apps/atalanta/atalanta -A -f /home/grad/siu856300090/Downloads/ECE524/Project1/faultFile.flt /home/grad/siu856300090/Downloads/ECE524/Project1/c17_erroneous.bench");
+    
+    
+    // copyFile(fisc, graph, fout, Max,Npo,269, 5);
+    // system("/home/aashish/Atalanta/atalanta -A -f /home/aashish/Downloads/Cause-Effect-Diagnosis/faultFile.flt /home/aashish/Downloads/Cause-Effect-Diagnosis/c17_erroneous.bench");
     // patternFile= fopen("TestPatterns.test","w");
 
     // ftest= fopen("c17_erroneous.test","r");
@@ -42,100 +42,101 @@ void main(int argc, char **argv)
     // fclose(ftest);
     // fclose(patternFile);
 
+
     // patternFile= fopen("TestPatterns.test","r");
 
     // testSet1= fopen("testSet1.test","w");
-    // selectRandomPattern(patternFile,testSet1,NtestPatterns, Npi);
+    // if (NtestPatterns!=0) selectRandomPattern(patternFile,testSet1,NtestPatterns, Npi);
 
-    
+    //*************************************Run ALL ***********************************************
 
-    // for (nodeToReplace = 0; nodeToReplace <= Max; nodeToReplace++)
-    // {
-    //     if (graph[nodeToReplace].Type != 0 )
-    //     {
-    //         if (graph[nodeToReplace].Type == 8)
-    //         {
-    //             newNodeType = 9;
+    for (nodeToReplace = 0; nodeToReplace <= Max; nodeToReplace++)
+    {
+        if (graph[nodeToReplace].Type != 0 )
+        {
+            if (graph[nodeToReplace].Type == 8)
+            {
+                newNodeType = 9;
 
-    //             copyFile(fisc, graph, fout, Max, Npo, nodeToReplace, newNodeType);
-    //             run(patternFile, ftest, testSet1, Npi, Max, NtestPatterns);
-    //         }
-    //         else if (graph[nodeToReplace].Type == 9)
-    //         {
-    //             newNodeType = 8;
-    //             copyFile(fisc, graph, fout, Max, Npo, nodeToReplace, newNodeType);
-    //             run(patternFile, ftest, testSet1, Npi, Max, NtestPatterns);
-    //         }
-    //         else if (graph[nodeToReplace].Type == 2)
-    //         {
-    //             for (newNodeType = 3; newNodeType <= 7; newNodeType++)
-    //             {
-    //                 copyFile(fisc, graph, fout, Max, Npo, nodeToReplace, newNodeType);
-    //                 run(patternFile, ftest, testSet1, Npi, Max, NtestPatterns);
-    //             }
-    //         }
-    //         else if (graph[nodeToReplace].Type == 7)
-    //         {
-    //             for (newNodeType = 2; newNodeType <= 6; newNodeType++)
-    //             {
-    //                 copyFile(fisc, graph, fout, Max, Npo, nodeToReplace, newNodeType);
-    //                 run(patternFile, ftest, testSet1, Npi, Max, NtestPatterns);
-    //             }
-    //         }
-    //         else if (graph[nodeToReplace].Type == 3)
-    //         {
-    //             newNodeType = 2;
-    //             copyFile(fisc, graph, fout, Max, Npo, nodeToReplace, newNodeType);
-    //             run(patternFile, ftest, testSet1, Npi, Max, NtestPatterns);
-    //             for (newNodeType = 4; newNodeType <= 7; newNodeType++)
-    //             {
-    //                 copyFile(fisc, graph, fout, Max, Npo, nodeToReplace, newNodeType);
-    //                 run(patternFile, ftest, testSet1, Npi, Max, NtestPatterns);
-    //             }
-    //         }
-    //         else if (graph[nodeToReplace].Type == 4)
-    //         {
-    //             for (newNodeType = 2; newNodeType <= 3; newNodeType++)
-    //             {
-    //                 copyFile(fisc, graph, fout, Max, Npo, nodeToReplace, newNodeType);
-    //                 run(patternFile, ftest, testSet1, Npi, Max, NtestPatterns);
-    //             }
-    //             for (newNodeType = 5; newNodeType <= 7; newNodeType++)
-    //             {
-    //                 copyFile(fisc, graph, fout, Max, Npo, nodeToReplace, newNodeType);
-    //                 run(patternFile, ftest, testSet1, Npi, Max, NtestPatterns);
-    //             }
-    //         }
-    //         else if (graph[nodeToReplace].Type == 5)
-    //         {
-    //             for (newNodeType = 2; newNodeType <= 4; newNodeType++)
-    //             {
-    //                 copyFile(fisc, graph, fout, Max, Npo, nodeToReplace, newNodeType);
-    //                 run(patternFile, ftest, testSet1, Npi, Max, NtestPatterns);
-    //             }
-    //             for (newNodeType = 6; newNodeType <= 7; newNodeType++)
-    //             {
-    //                 copyFile(fisc, graph, fout, Max, Npo, nodeToReplace, newNodeType);
-    //                 run(patternFile, ftest, testSet1, Npi, Max, NtestPatterns);
-    //             }
-    //         }
-    //         else if (graph[nodeToReplace].Type == 6)
-    //         {
-    //             for (newNodeType = 2; newNodeType <= 5; newNodeType++)
-    //             {
-    //                 copyFile(fisc, graph, fout, Max, Npo, nodeToReplace, newNodeType);
-    //                 run(patternFile, ftest, testSet1, Npi, Max, NtestPatterns);
-    //             }
-    //             newNodeType = 7;
-    //             copyFile(fisc, graph, fout, Max, Npo, nodeToReplace, newNodeType);
-    //             run(patternFile, ftest, testSet1, Npi, Max, NtestPatterns);
-    //         }
+                copyFile(fisc, graph, fout, Max, Npo, nodeToReplace, newNodeType);
+                run(patternFile, ftest, testSet1, Npi, Max, NtestPatterns);
+            }
+            else if (graph[nodeToReplace].Type == 9)
+            {
+                newNodeType = 8;
+                copyFile(fisc, graph, fout, Max, Npo, nodeToReplace, newNodeType);
+                run(patternFile, ftest, testSet1, Npi, Max, NtestPatterns);
+            }
+            else if (graph[nodeToReplace].Type == 2)
+            {
+                for (newNodeType = 3; newNodeType <= 7; newNodeType++)
+                {
+                    copyFile(fisc, graph, fout, Max, Npo, nodeToReplace, newNodeType);
+                    run(patternFile, ftest, testSet1, Npi, Max, NtestPatterns);
+                }
+            }
+            else if (graph[nodeToReplace].Type == 7)
+            {
+                for (newNodeType = 2; newNodeType <= 6; newNodeType++)
+                {
+                    copyFile(fisc, graph, fout, Max, Npo, nodeToReplace, newNodeType);
+                    run(patternFile, ftest, testSet1, Npi, Max, NtestPatterns);
+                }
+            }
+            else if (graph[nodeToReplace].Type == 3)
+            {
+                newNodeType = 2;
+                copyFile(fisc, graph, fout, Max, Npo, nodeToReplace, newNodeType);
+                run(patternFile, ftest, testSet1, Npi, Max, NtestPatterns);
+                for (newNodeType = 4; newNodeType <= 7; newNodeType++)
+                {
+                    copyFile(fisc, graph, fout, Max, Npo, nodeToReplace, newNodeType);
+                    run(patternFile, ftest, testSet1, Npi, Max, NtestPatterns);
+                }
+            }
+            else if (graph[nodeToReplace].Type == 4)
+            {
+                for (newNodeType = 2; newNodeType <= 3; newNodeType++)
+                {
+                    copyFile(fisc, graph, fout, Max, Npo, nodeToReplace, newNodeType);
+                    run(patternFile, ftest, testSet1, Npi, Max, NtestPatterns);
+                }
+                for (newNodeType = 5; newNodeType <= 7; newNodeType++)
+                {
+                    copyFile(fisc, graph, fout, Max, Npo, nodeToReplace, newNodeType);
+                    run(patternFile, ftest, testSet1, Npi, Max, NtestPatterns);
+                }
+            }
+            else if (graph[nodeToReplace].Type == 5)
+            {
+                for (newNodeType = 2; newNodeType <= 4; newNodeType++)
+                {
+                    copyFile(fisc, graph, fout, Max, Npo, nodeToReplace, newNodeType);
+                    run(patternFile, ftest, testSet1, Npi, Max, NtestPatterns);
+                }
+                for (newNodeType = 6; newNodeType <= 7; newNodeType++)
+                {
+                    copyFile(fisc, graph, fout, Max, Npo, nodeToReplace, newNodeType);
+                    run(patternFile, ftest, testSet1, Npi, Max, NtestPatterns);
+                }
+            }
+            else if (graph[nodeToReplace].Type == 6)
+            {
+                for (newNodeType = 2; newNodeType <= 5; newNodeType++)
+                {
+                    copyFile(fisc, graph, fout, Max, Npo, nodeToReplace, newNodeType);
+                    run(patternFile, ftest, testSet1, Npi, Max, NtestPatterns);
+                }
+                newNodeType = 7;
+                copyFile(fisc, graph, fout, Max, Npo, nodeToReplace, newNodeType);
+                run(patternFile, ftest, testSet1, Npi, Max, NtestPatterns);
+            }
             
-    //     } 
-    // }
+        } 
+    }
 
-    // fclose(testSet1);
-
+    fclose(testSet1);
+  /****************************************************RUn ALL ***************************************************************/
     // fclose(fout);
 
     // PrintCircuit(graph2,Max);
