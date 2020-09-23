@@ -326,6 +326,60 @@ const char *gateType(int Type)
     return "XNOR";
 }
 
+void append(struct Node **head_ref, char *pattern)
+{
+
+  struct Node *new_node = (struct Node *)malloc(sizeof(struct Node));
+  struct Node *last = *head_ref; /* used in step 5*/
+  strcpy(new_node->pattern, pattern);
+  new_node->next = NULL;
+  
+  if (*head_ref == NULL)
+  {
+    *head_ref = new_node;
+    return;
+  }
+
+  while (last->next != NULL)
+    last = last->next;
+
+  last->next = new_node;
+  return;
+}
+
+const char *GetNth(struct Node *head, int index)
+{
+  struct Node *current = head;
+
+  // the index of the
+  // node we're currently
+  // looking at
+  int count = 1;
+  while (current != NULL)
+  {
+    if (count == index)
+      return (current->pattern);
+    count++;
+    current = current->next;
+  }
+
+  /* if we get to this line,  
+       the caller was asking 
+       for a non-existent element 
+       so we assert fail */
+  assert(0);
+}
+
+// This function prints contents of linked list starting from head
+void printList(struct Node *node)
+{
+  while (node != NULL)
+  {
+    printf(" %s ", node->pattern);
+    node = node->next;
+  }
+}
+
 void createXORbranch(NODE *graph, LIST *faninList, FILE *fout, int newNodeType, int nodeToReplace, int Max)
 {
   LIST *temp1;
@@ -363,7 +417,6 @@ void createXORbranch(NODE *graph, LIST *faninList, FILE *fout, int newNodeType, 
     {
       fanInArray[j] = fanInArray[j] + Max;
     }
-    
   }
 
   i = fanInArray[k];
@@ -383,7 +436,7 @@ void createXORbranch(NODE *graph, LIST *faninList, FILE *fout, int newNodeType, 
 void copyFile(FILE *fisc, NODE *graph, FILE *fout, int Max, int Npo, int nodeToReplace, int newNodeType)
 {
   fout = fopen("c17_erroneous.bench", "w");
-  int i = 0, count = 0, value = 0, POnumber=0;
+  int i = 0, count = 0, value = 0, POnumber = 0;
   LIST *temp;
   char inputs[1000] = "";
   char add[10];
@@ -465,7 +518,7 @@ void copyFile(FILE *fisc, NODE *graph, FILE *fout, int Max, int Npo, int nodeToR
         value = 2 * Max + i;
         sprintf(add_3, "%d", value);
         strcat(xor_outputs, add_3);
-        POnumber+=1;
+        POnumber += 1;
         if (POnumber != Npo)
           strcat(xor_outputs, ",");
       }
@@ -476,14 +529,15 @@ void copyFile(FILE *fisc, NODE *graph, FILE *fout, int Max, int Npo, int nodeToR
   fclose(fout);
 }
 
-int readTestFile(FILE *ftest, FILE *patternFile, int Max)
+struct Node *readTestFile(FILE *ftest, FILE *patternFile, int Max, int *NtestPatterns)
 {
+  struct Node *head = NULL;
+
   char fline[Mlin], scan1[50], inputPattern[1000], scan3[50], *i, skipUpto[100], checkString[100];
   bzero(scan1, 50);
   bzero(inputPattern, 1000);
   bzero(scan3, 50);
   bzero(fline, Mlin);
-  int NtestPatterns = 0;
 
   sprintf(skipUpto, "%d /%d", 2 * Max + Max + 1, 0);
   while (strncmp(fline, skipUpto, strlen(skipUpto)) != 0)
@@ -495,60 +549,151 @@ int readTestFile(FILE *ftest, FILE *patternFile, int Max)
     fgets(fline, Mlin, ftest);
 
     sscanf(fline, "%s %s %s", scan1, inputPattern, scan3);
-    sprintf(checkString,"/0");
-    if(strncmp(inputPattern,checkString,strlen(checkString))==0) break;
-    
+    sprintf(checkString, "/0");
+    if (strncmp(inputPattern, checkString, strlen(checkString)) == 0)
+      break;
+
     i = inputPattern;
-    while (*i != '\0')
-    {
-      if (*i == 'x')
-      {
-        const int randomBit = rand() % 2;
-        fprintf(patternFile, "%d", randomBit); // store in TestPatternAray[i=0 to EndOfFile]
-      }
-      else
-        fprintf(patternFile, "%c", *i);  // store in TestPatternAray[i=0 to EndOfFile]
-      i++;
-    }
-    fprintf(patternFile, "\n");
-    NtestPatterns += 1;
-    
+
+    append(&head, inputPattern);
+    fprintf(patternFile, "%s\n", inputPattern);
+    *NtestPatterns = *NtestPatterns + 1;
   }
-  return NtestPatterns;
+
+  return head;
 }
 
-void selectRandomPattern(FILE *patternFile, FILE *testSet1, int NtestPattern, int Npi)
+void selectRandomPattern(struct Node *patternHead, FILE *patternFile, FILE *testSet1, int NtestPattern, int Npi)
 {
+
   char line[Mlin], testPattern[1000];
+  const char *i;
   bzero(testPattern, 1000);
   srand(time(0));
   int targetLine = 0;
   targetLine = (rand() % NtestPattern + 1);
-  printf("the number of test pattern is %d\n",NtestPattern);
-  printf(" the target line is %d\n",targetLine);
-  while (targetLine < 1)
+  printf("the number of test pattern is %d\n", NtestPattern);
+  printf(" the target line is %d\n", targetLine);
+
+  i = GetNth(patternHead, targetLine);
+  while (*i != '\0')
   {
-    fgets(line, Npi + 1, patternFile);
-    targetLine--;
+    if (*i == 'x')
+    {
+      const int randomBit = rand() % 2;
+      fprintf(testSet1, "%d", randomBit);
+    }
+    else
+      fprintf(testSet1, "%c", *i);
+    i++;
+  }
+  fprintf(testSet1, "\n");
+}
+
+void mainPart(int nodeToReplace, int Max, int NtestPatterns, int newNodeType, int Npi, int Npo, NODE *graph, FILE *fout, FILE *fisc, FILE *patternFile, FILE *ftest, FILE *testSet1)
+{
+
+  for (nodeToReplace = 0; nodeToReplace <= Max; nodeToReplace++)
+  {
+    if (graph[nodeToReplace].Type != 0)
+    {
+      if (graph[nodeToReplace].Type == 8)
+      {
+        newNodeType = 9;
+
+        copyFile(fisc, graph, fout, Max, Npo, nodeToReplace, newNodeType);
+        run(patternFile, ftest, testSet1, Npi, Max, NtestPatterns);
+      }
+      else if (graph[nodeToReplace].Type == 9)
+      {
+        newNodeType = 8;
+        copyFile(fisc, graph, fout, Max, Npo, nodeToReplace, newNodeType);
+        run(patternFile, ftest, testSet1, Npi, Max, NtestPatterns);
+      }
+      else if (graph[nodeToReplace].Type == 2)
+      {
+        for (newNodeType = 3; newNodeType <= 7; newNodeType++)
+        {
+          copyFile(fisc, graph, fout, Max, Npo, nodeToReplace, newNodeType);
+          run(patternFile, ftest, testSet1, Npi, Max, NtestPatterns);
+        }
+      }
+      else if (graph[nodeToReplace].Type == 7)
+      {
+        for (newNodeType = 2; newNodeType <= 6; newNodeType++)
+        {
+          copyFile(fisc, graph, fout, Max, Npo, nodeToReplace, newNodeType);
+          run(patternFile, ftest, testSet1, Npi, Max, NtestPatterns);
+        }
+      }
+      else if (graph[nodeToReplace].Type == 3)
+      {
+        newNodeType = 2;
+        copyFile(fisc, graph, fout, Max, Npo, nodeToReplace, newNodeType);
+        run(patternFile, ftest, testSet1, Npi, Max, NtestPatterns);
+        for (newNodeType = 4; newNodeType <= 7; newNodeType++)
+        {
+          copyFile(fisc, graph, fout, Max, Npo, nodeToReplace, newNodeType);
+          run(patternFile, ftest, testSet1, Npi, Max, NtestPatterns);
+        }
+      }
+      else if (graph[nodeToReplace].Type == 4)
+      {
+        for (newNodeType = 2; newNodeType <= 3; newNodeType++)
+        {
+          copyFile(fisc, graph, fout, Max, Npo, nodeToReplace, newNodeType);
+          run(patternFile, ftest, testSet1, Npi, Max, NtestPatterns);
+        }
+        for (newNodeType = 5; newNodeType <= 7; newNodeType++)
+        {
+          copyFile(fisc, graph, fout, Max, Npo, nodeToReplace, newNodeType);
+          run(patternFile, ftest, testSet1, Npi, Max, NtestPatterns);
+        }
+      }
+      else if (graph[nodeToReplace].Type == 5)
+      {
+        for (newNodeType = 2; newNodeType <= 4; newNodeType++)
+        {
+          copyFile(fisc, graph, fout, Max, Npo, nodeToReplace, newNodeType);
+          run(patternFile, ftest, testSet1, Npi, Max, NtestPatterns);
+        }
+        for (newNodeType = 6; newNodeType <= 7; newNodeType++)
+        {
+          copyFile(fisc, graph, fout, Max, Npo, nodeToReplace, newNodeType);
+          run(patternFile, ftest, testSet1, Npi, Max, NtestPatterns);
+        }
+      }
+      else if (graph[nodeToReplace].Type == 6)
+      {
+        for (newNodeType = 2; newNodeType <= 5; newNodeType++)
+        {
+          copyFile(fisc, graph, fout, Max, Npo, nodeToReplace, newNodeType);
+          run(patternFile, ftest, testSet1, Npi, Max, NtestPatterns);
+        }
+        newNodeType = 7;
+        copyFile(fisc, graph, fout, Max, Npo, nodeToReplace, newNodeType);
+        run(patternFile, ftest, testSet1, Npi, Max, NtestPatterns);
+      }
+    }
   }
 
-  // get from the TestPatternArray[targetLine]
-  fgets(line, Npi + 1, patternFile);
-  sscanf(line, "%s", testPattern);
-  fprintf(testSet1, "%s\n", testPattern);
+  
 }
 
 void run(FILE *patternFile, FILE *ftest, FILE *testSet1, int Npi, int Max, int NtestPatterns)
 {
-  system("/home/aashish/Atalanta/atalanta -A -f /home/aashish/Downloads/Cause-Effect-Diagnosis/faultFile.flt /home/aashish/Downloads/Cause-Effect-Diagnosis/c17_erroneous.bench");
+  struct Node *head;
+
+  system("/home/aashish/Atalanta/atalanta -D 50 -f /home/aashish/Downloads/Cause-Effect-Diagnosis/faultFile.flt /home/aashish/Downloads/Cause-Effect-Diagnosis/c17_erroneous.bench");
+  // system("/opt/net/apps/atalanta/atalanta -D 100 -f  /home/grad/siu856300090/Downloads/ECE524/Project1/faultFile.flt /home/grad/siu856300090/Downloads/ECE524/Project1/c17_erroneous.bench");
   patternFile = fopen("TestPatterns.test", "w");
   ftest = fopen("c17_erroneous.test", "r");
-  NtestPatterns = readTestFile(ftest, patternFile, Max);
+  head = readTestFile(ftest, patternFile, Max, &NtestPatterns);
   fclose(ftest);
   fclose(patternFile);
   patternFile = fopen("TestPatterns.test", "r");
 
- 
-  if (NtestPatterns !=0) selectRandomPattern(patternFile, testSet1, NtestPatterns, Npi);
+  if (NtestPatterns != 0)
+    selectRandomPattern(head, patternFile, testSet1, NtestPatterns, Npi);
   fclose(patternFile);
 }

@@ -54,7 +54,11 @@ typedef struct NODE_type
   LIST *Fin,*Fot;                      //fanin members, fanout members 
 } NODE;
 //3.Stucture declaration for PATTERN
-
+struct Node 
+{
+	char pattern[1000];				// integer data
+	struct Node* next;	   // pointer to the next node
+};
 
 
 
@@ -85,11 +89,13 @@ int countPO(NODE*,int);
 void makeNewISC(NODE *, NODE *,int,int);
 
 void copyFile(FILE *, NODE *,FILE *, int,int,int,int );
-int readTestFile(FILE *, FILE*,int);
+struct Node* readTestFile(FILE *, FILE*,int, int*);
 
-void selectRandomPattern(FILE *,FILE *, int,int );
+void selectRandomPattern(struct Node*,FILE *,FILE *, int,int );
 void run(FILE *, FILE* , FILE *, int , int , int );
 void createXORbranch(NODE *,LIST *, FILE *,int, int,int);
+void mainPart(int , int , int, int,int, int, NODE*, FILE*,FILE*,FILE*, FILE*, FILE*);
+
 /***************************************************************************************************************************
  PATTERN Structure Functions
 ****************************************************************************************************************************/
