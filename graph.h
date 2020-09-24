@@ -91,10 +91,10 @@ void makeNewISC(NODE *, NODE *,int,int);
 void copyFile(FILE *, NODE *,FILE *, int,int,int,int );
 struct Node* readTestFile(FILE *, FILE*,int, int*);
 
-void selectRandomPattern(struct Node*,FILE *,FILE *, int,int );
-void run(FILE *, FILE* , FILE *, int , int , int );
+void selectRandomPattern(struct Node*,FILE *,FILE *, int,int,int );
+void run(FILE *, FILE* , FILE *, int , int , int ,int);
 void createXORbranch(NODE *,LIST *, FILE *,int, int,int);
-void mainPart(int , int , int, int,int, int, NODE*, FILE*,FILE*,FILE*, FILE*, FILE*);
+void mainPart(int , int , int, int,int, int, NODE*, FILE*,FILE*,FILE*, FILE*, FILE*, int);
 
 /***************************************************************************************************************************
  PATTERN Structure Functions

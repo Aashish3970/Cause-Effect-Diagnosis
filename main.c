@@ -17,7 +17,7 @@ void main(int argc, char **argv)
     //FAULT stuck[Mft];                      //structure used to store the faults information in .faults file
     int a, b, c, d, nLines, numberOfPatterns = 0; //random variables
     int nodeToReplace = 0, newNodeType = 0, NtestPatterns = 0;
-
+    int NpatternsToSelect;
     //Read the .isc file and store the information in graph structure
     fisc = fopen(argv[1], "r"); //file pointer to open .isc file
     Max = 0;
@@ -54,8 +54,12 @@ void main(int argc, char **argv)
 
 
     //*************************************Run ALL ***********************************************
-   for(iterations=0; iterations<500; iterations++) mainPart(nodeToReplace, Max, NtestPatterns, newNodeType, Npi, Npo, graph, fout, fisc, patternFile, ftest, testSet1);
-    fclose(testSet1);
+  for(NpatternsToSelect=1; NpatternsToSelect<=4; NpatternsToSelect++)
+  {
+    for(iterations=0; iterations<500; iterations++) mainPart(nodeToReplace, Max, NtestPatterns, newNodeType, Npi, Npo, graph, fout, fisc, patternFile, ftest, testSet1,NpatternsToSelect);
+    
+  }
+  fclose(testSet1);
   /****************************************************RUn ALL ***************************************************************/
     // fclose(fout);
 
