@@ -5,11 +5,11 @@
 
 void main(int argc, char **argv)
 {
-    FILE *fisc, *fvec, *ffau, *fres, *fout, *ftest, *patternFile, *testSet1; //file pointers used for .isc file, .vec file, .faults file and resultfile
-    int Max, Opt, Npi, Npo, Total, Tfs;                                      //maxnode id,option,tot no of PIs,tot no of Pos,Tot no of input patterns& faults in.vec in.faults
+    FILE *fisc, *Pat,*fvec, *ffau, *fres, *fout, *ftest, *patternFile, *testSet1, *fwrite; //file pointers used for .isc file, .vec file, .faults file and resultfile
+    int Max, Opt, Npi, Npo, Total, Tfs,totalPatterns=0;                                      //maxnode id,option,tot no of PIs,tot no of Pos,Tot no of input patterns& faults in.vec in.faults
     int iterations=0;
    
-
+    static PATTERN p_vect[Mpt];
     NODE graph[Mnod];
     // NODE graph2[Mnod]; //structure used to store the ckt information in .isc file
     //PATTERN vector[Mpt];                      //structure used to store the input vectors information in .vec file
@@ -33,27 +33,9 @@ void main(int argc, char **argv)
     fclose(ffau);
     printf("max is %d", Max);
     testSet1 = fopen("testSet1.test", "w");
-    
-    /********************************Try BLOck*************************************/
-
-    // copyFile(fisc, graph, fout, Max,Npo,10, AND);
-    // system("/opt/net/apps/atalanta/atalanta -A -f  /home/grad/siu856300090/Downloads/ECE524/Project1/faultFile.flt /home/grad/siu856300090/Downloads/ECE524/Project1/c17_erroneous.bench");
-    // patternFile= fopen("TestPatterns.test","w");
-
-    // ftest= fopen("c17_erroneous.test","r");
-    // NtestPatterns=readTestFile(ftest, patternFile, Max);
-    // fclose(ftest);
-    // fclose(patternFile);
-    // patternFile= fopen("TestPatterns.test","r");
-
-    // testSet1= fopen("testSet1.test","w");
-    // if (NtestPatterns!=0) selectRandomPattern(patternFile,testSet1,NtestPatterns, Npi);
-
-/*****************try BLOCK End***********************************************/
 
 
-
-    //*************************************Run ALL ***********************************************
+  //*************************************Run ALL ***********************************************
   for(NpatternsToSelect=1; NpatternsToSelect<=4; NpatternsToSelect++)
   {
     for(iterations=0; iterations<500; iterations++) mainPart(nodeToReplace, Max, NtestPatterns, newNodeType, Npi, Npo, graph, fout, fisc, patternFile, ftest, testSet1,NpatternsToSelect);
@@ -61,6 +43,16 @@ void main(int argc, char **argv)
   }
   fclose(testSet1);
   /****************************************************RUn ALL ***************************************************************/
+  Pat=fopen("testSet1.test","r");                          
+  totalPatterns=ReadVec(Pat,p_vect);          
+  printf("\nTot No of Pattern: %d",Total);         
+  fclose(Pat);
+
+  fwrite= fopen("outputs.txt","w");
+  simulate(Max, totalPatterns, graph, p_vect, fwrite);   
+
+  
+  
     // fclose(fout);
 
     // PrintCircuit(graph2,Max);

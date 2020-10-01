@@ -24,7 +24,7 @@ Constant Declarations
 #define Min         9			// max node in degree (Nfi)
 #define Mpi       233			// max number of primary inputs
 #define Mpo       140			// max number of primary outputs
-#define Mpt       10			// max number of input patterns in .vec file
+#define Mpt       1000000			// max number of input patterns in .vec file
 #define Mft       10			// max number of stuck at faults in .faults file
 // NODE TYPE CONSTANTS 
 #define INPT 1				// Primary Input
@@ -59,6 +59,12 @@ struct Node
 	char pattern[1000];				// integer data
 	struct Node* next;	   // pointer to the next node
 };
+
+typedef struct PATTERN
+{
+  char PI[Mpi];
+} PATTERN;
+
 
 
 
@@ -95,6 +101,11 @@ void selectRandomPattern(struct Node*,FILE *,FILE *, int,int,int );
 void run(FILE *, FILE* , FILE *, int , int , int ,int);
 void createXORbranch(NODE *,LIST *, FILE *,int, int,int);
 void mainPart(int , int , int, int,int, int, NODE*, FILE*,FILE*,FILE*, FILE*, FILE*, int);
+int ReadVec(FILE *, PATTERN *);
+
+int simulate(int, int, NODE *, PATTERN *, FILE *);
+int charToInt(char);
+char intToChar(int);
 
 /***************************************************************************************************************************
  PATTERN Structure Functions

@@ -276,6 +276,90 @@ void ClearCircuit(NODE *graph, int i)
 /****************************************************************************************************************************/
 /****** Copy the isc file to new isc file ********/
 
+int and[5][5] = {
+    {
+        0,
+        0,
+        0,
+        0,
+        0,
+    },
+    {0, 1, 2, 3, 4},
+    {0, 2, 2, 2, 2},
+    {0, 3, 2, 3, 0},
+    {0, 4, 2, 0, 4}};
+
+int or [5][5] = {
+    {0, 1, 2, 3, 4}, {1, 1, 1, 1, 1}, {2, 1, 2, 2, 2}, {3, 1, 2, 3, 1}, {4, 1, 2, 1, 4}};
+
+int inv[5] = {1, 0, 2, 4, 3};
+
+int from[5] = {0, 1, 2, 3, 4};
+
+int charToInt(char c)
+{
+  int int_value;
+
+  if (c == 'x')
+  {
+    int_value = 2;
+  }
+  else
+  {
+    int_value = c - '0';
+  }
+  return int_value;
+}
+
+char intToChar(int n)
+{
+  char c;
+  if (n == 2)
+  {
+    c = 'x';
+  }
+  else
+
+  {
+    c = '0' + n;
+  }
+  return c;
+}
+
+int output(int gate, int in1, int in2)
+{
+  int out;
+  switch (gate)
+  {
+
+  case 2:
+    out = from[in1];
+    break;
+  case 3:
+    out = from[in1];
+    break;
+  case 4:
+    out = inv[in1];
+    break;
+  case 5:
+  case 6:
+    out = and[in1][in2];
+    break;
+  case 7:
+  case 8:
+    out = or [in1][in2];
+    break;
+
+  case 10:
+  case 9:
+    out = and[or[in1][in2]][or [inv[in1]][inv[in2]]];
+    break;
+  default:
+    out = from[in1];
+  }
+  return out;
+}
+
 int countPI(NODE *graph, int Max)
 {
   int i, PIcount = 0;
@@ -377,6 +461,87 @@ void printList(struct Node *node)
   {
     printf(" %s ", node->pattern);
     node = node->next;
+  }
+}
+
+/*******************Function To Read vector File**********************************************************/
+int ReadVec(FILE *Pat, PATTERN *p_vect)
+{
+
+  char str[Mpi];
+  int a = 0;
+
+  while (!feof(Pat))
+  {
+
+    fgets(str, Mpi, Pat);
+    if (*str != '\0')
+    {
+      strcpy(p_vect[a].PI, str);
+      a++;
+    }
+  }
+  return a;
+}
+
+int simulate(int Tgat, int totalPatterns, NODE *node, PATTERN *p_vact, FILE *fwrite)
+{
+  int p_vactLine, node_Line;
+  LIST *temp;
+  int x, y;
+  x = y = 0;
+
+  for (p_vactLine = 0; p_vactLine < totalPatterns; ++p_vactLine)
+  {
+    fprintf(fwrite, "%s", p_vact[p_vactLine].PI);
+    int a = 0;
+    for (node_Line = 0; node_Line <= Tgat; ++node_Line)
+    {
+      if (node[node_Line].Type == INPT)
+      {
+        node[node_Line].Cval = charToInt(p_vact[p_vactLine].PI[a]);
+        a++;
+      }
+      else
+      {
+        if (node[node_Line].Fin != NULL)
+        {
+
+          temp = node[node_Line].Fin;
+          x = node[temp->id].Cval;
+          while (temp != NULL)
+          {
+            if (temp->next != NULL)
+            {
+              y = node[temp->next->id].Cval;
+
+              x = output(node[node_Line].Type, x, y);
+            }
+            temp = temp->next;
+          }
+
+          if (node[node_Line].Type == FROM || node[node_Line].Type == NOT || node[node_Line].Type == BUFF)
+          {
+            node[node_Line].Cval = output(node[node_Line].Type, x, 1);
+          }
+          else
+          {
+
+            node[node_Line].Cval = x;
+          }
+          if (node[node_Line].Type == 6 || node[node_Line].Type == 8 || node[node_Line].Type == 10)
+          {
+            node[node_Line].Cval = inv[node[node_Line].Cval];
+          }
+
+          if (node[node_Line].Fot == 0)
+          {
+            fprintf(fwrite, "%c", intToChar(node[node_Line].Cval));
+          }
+        }
+      }
+    }
+    fprintf(fwrite, "\n\n");
   }
 }
 
@@ -571,9 +736,8 @@ void selectRandomPattern(struct Node *patternHead, FILE *patternFile, FILE *test
   bzero(testPattern, 1000);
   srand(time(0));
   int targetLine = 0;
-  
+
   printf("the number of test pattern is %d\n", NtestPattern);
-  
 
   while (NpatternsToSelect != 0)
   {
