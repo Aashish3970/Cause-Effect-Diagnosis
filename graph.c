@@ -484,65 +484,120 @@ int ReadVec(FILE *Pat, PATTERN *p_vect)
   return a;
 }
 
-int simulate(int Tgat, int totalPatterns, NODE *node, PATTERN *p_vact, FILE *fwrite)
+int simulate(int Tgat, int totalPatterns, NODE *node, PATTERN *p_vect, FILE *fwrite, int nodeToReplace, int newNodeType, faultList *Flist, int p_vectLine, char *detectedFault)
 {
-  int p_vactLine, node_Line;
+  int node_Line;
   LIST *temp;
   int x, y;
   x = y = 0;
+  int totalOutputs = 0;
+  totalOutputs = countPO(node, Tgat);
 
-  for (p_vactLine = 0; p_vactLine < totalPatterns; ++p_vactLine)
+  char faultList[1000] = "";
+  // for (p_vectLine = 0; p_vectLine < totalPatterns; ++p_vectLine)
+  // {
+  char writeToFile[50] = "";
+  // strcat(writeToFile, p_vect[p_vectLine].PI);
+
+  int a = 0, count = 0, faultNumber = 0;
+  
+
+  for (node_Line = 0; node_Line <= Tgat; ++node_Line)
   {
-    fprintf(fwrite, "%s", p_vact[p_vactLine].PI);
-    int a = 0;
-    for (node_Line = 0; node_Line <= Tgat; ++node_Line)
+    if (node[node_Line].Type == INPT)
     {
-      if (node[node_Line].Type == INPT)
+      node[node_Line].Cval = charToInt(p_vect[p_vectLine].PI[a]);
+      node[node_Line].Fval = charToInt(p_vect[p_vectLine].PI[a]);
+      a++;
+    }
+    else
+    {
+      if (node[node_Line].Fin != NULL)
       {
-        node[node_Line].Cval = charToInt(p_vact[p_vactLine].PI[a]);
-        a++;
+        temp = node[node_Line].Fin;
+        x = node[temp->id].Cval;
+        while (temp != NULL)
+        {
+          if (temp->next != NULL)
+          {
+            y = node[temp->next->id].Cval;
+
+            x = output(node[node_Line].Type, x, y);
+          }
+          temp = temp->next;
+        }
+
+        if (node[node_Line].Type == FROM || node[node_Line].Type == NOT || node[node_Line].Type == BUFF)
+        {
+          node[node_Line].Cval = output(node[node_Line].Type, x, 1);
+        }
+        else
+        {
+          node[node_Line].Cval = x;
+        }
+        if (node[node_Line].Type == NAND || node[node_Line].Type == NOR || node[node_Line].Type == XNOR)
+        {
+          node[node_Line].Cval = inv[node[node_Line].Cval];
+        }
+
+        // if (node[node_Line].Fot == 0)
+        // {
+        //   fprintf(fwrite, "%c", intToChar(node[node_Line].Cval));
+        // }
+      }
+    }
+
+    if (node_Line == nodeToReplace)
+      node[node_Line].Type = newNodeType;
+    if (node[node_Line].Fin != NULL)
+    {
+      temp = node[node_Line].Fin;
+      x = node[temp->id].Fval;
+      while (temp != NULL)
+      {
+        if (temp->next != NULL)
+        {
+          y = node[temp->next->id].Fval;
+
+          x = output(node[node_Line].Type, x, y);
+        }
+        temp = temp->next;
+      }
+
+      if (node[node_Line].Type == FROM || node[node_Line].Type == NOT || node[node_Line].Type == BUFF)
+      {
+        node[node_Line].Fval = output(node[node_Line].Type, x, 1);
       }
       else
       {
-        if (node[node_Line].Fin != NULL)
-        {
-
-          temp = node[node_Line].Fin;
-          x = node[temp->id].Cval;
-          while (temp != NULL)
-          {
-            if (temp->next != NULL)
-            {
-              y = node[temp->next->id].Cval;
-
-              x = output(node[node_Line].Type, x, y);
-            }
-            temp = temp->next;
-          }
-
-          if (node[node_Line].Type == FROM || node[node_Line].Type == NOT || node[node_Line].Type == BUFF)
-          {
-            node[node_Line].Cval = output(node[node_Line].Type, x, 1);
-          }
-          else
-          {
-
-            node[node_Line].Cval = x;
-          }
-          if (node[node_Line].Type == 6 || node[node_Line].Type == 8 || node[node_Line].Type == 10)
-          {
-            node[node_Line].Cval = inv[node[node_Line].Cval];
-          }
-
-          if (node[node_Line].Fot == 0)
-          {
-            fprintf(fwrite, "%c", intToChar(node[node_Line].Cval));
-          }
-        }
+        node[node_Line].Fval = x;
+      }
+      if (node[node_Line].Type == NAND || node[node_Line].Type == NOR || node[node_Line].Type == XNOR)
+      {
+        node[node_Line].Fval = inv[node[node_Line].Fval];
       }
     }
-    fprintf(fwrite, "\n\n");
+
+    if (node[node_Line].Po == 1)
+    {
+      if (node[node_Line].Cval == node[node_Line].Fval)
+        count += 1;
+      if (count == totalOutputs)
+      {
+
+        // strcpy(Flist[faultNumber].pattern, p_vect[p_vectLine].PI);
+
+        sprintf(writeToFile, "%d/%d ", nodeToReplace, newNodeType);
+        strcat(detectedFault, writeToFile);
+        // strcpy(Flist[faultNumber].fault, detectedFault);
+        // faultNumber++;
+        // fprintf(fwrite, "%c",intToChar(node[node_Line].Fval));
+      }
+    }
   }
+
+  // fprintf(fwrite, "%s\n", writeToFile);
+  // }
 }
 
 void createXORbranch(NODE *graph, LIST *faninList, FILE *fout, int newNodeType, int nodeToReplace, int Max)
@@ -864,4 +919,90 @@ void run(FILE *patternFile, FILE *ftest, FILE *testSet1, int Npi, int Max, int N
   if (NtestPatterns != 0)
     selectRandomPattern(head, patternFile, testSet1, NtestPatterns, Npi, NpatternsToSelect);
   fclose(patternFile);
+}
+
+void runSimulate(int Max, int totalPatterns, NODE *graph, PATTERN *p_vect, FILE *fwrite, faultList *Flist)
+{
+  int nodeToReplace = 0, newNodeType = 0;
+  int p_vectLine = 0;
+  
+  for (p_vectLine = 0; p_vectLine < totalPatterns; ++p_vectLine)
+  {
+    char faultDetected[1000]= "";  
+    strcat(faultDetected,p_vect[p_vectLine].PI);
+    for (nodeToReplace = 0; nodeToReplace <= Max; nodeToReplace++)
+    {
+
+      if (graph[nodeToReplace].Type != 0)
+      {
+        if (graph[nodeToReplace].Type == 8)
+        {
+          
+          newNodeType = 9;
+          simulate(Max, totalPatterns, graph, p_vect, fwrite, nodeToReplace, newNodeType, Flist, p_vectLine, faultDetected);
+
+        }
+        else if (graph[nodeToReplace].Type == 9)
+        {
+          newNodeType = 8;
+          simulate(Max, totalPatterns, graph, p_vect, fwrite, nodeToReplace, newNodeType, Flist, p_vectLine, faultDetected);
+        }
+        else if (graph[nodeToReplace].Type == 2)
+        {
+          for (newNodeType = 3; newNodeType <= 7; newNodeType++)
+          {
+            simulate(Max, totalPatterns, graph, p_vect, fwrite, nodeToReplace, newNodeType, Flist, p_vectLine,faultDetected);
+          }
+        }
+        else if (graph[nodeToReplace].Type == 7)
+        {
+          for (newNodeType = 2; newNodeType <= 6; newNodeType++)
+          {
+            simulate(Max, totalPatterns, graph, p_vect, fwrite, nodeToReplace, newNodeType, Flist, p_vectLine,faultDetected);
+          }
+        }
+        else if (graph[nodeToReplace].Type == 3)
+        {
+          newNodeType = 2;
+          simulate(Max, totalPatterns, graph, p_vect, fwrite, nodeToReplace, newNodeType, Flist, p_vectLine,faultDetected);
+          for (newNodeType = 4; newNodeType <= 7; newNodeType++)
+          {
+            simulate(Max, totalPatterns, graph, p_vect, fwrite, nodeToReplace, newNodeType, Flist, p_vectLine,faultDetected);
+          }
+        }
+        else if (graph[nodeToReplace].Type == 4)
+        {
+          for (newNodeType = 2; newNodeType <= 3; newNodeType++)
+          {
+            simulate(Max, totalPatterns, graph, p_vect, fwrite, nodeToReplace, newNodeType, Flist, p_vectLine,faultDetected);
+          }
+          for (newNodeType = 5; newNodeType <= 7; newNodeType++)
+          {
+            simulate(Max, totalPatterns, graph, p_vect, fwrite, nodeToReplace, newNodeType, Flist, p_vectLine,faultDetected);
+          }
+        }
+        else if (graph[nodeToReplace].Type == 5)
+        {
+          for (newNodeType = 2; newNodeType <= 4; newNodeType++)
+          {
+            simulate(Max, totalPatterns, graph, p_vect, fwrite, nodeToReplace, newNodeType, Flist, p_vectLine,faultDetected);
+          }
+          for (newNodeType = 6; newNodeType <= 7; newNodeType++)
+          {
+            simulate(Max, totalPatterns, graph, p_vect, fwrite, nodeToReplace, newNodeType, Flist, p_vectLine,faultDetected);
+          }
+        }
+        else if (graph[nodeToReplace].Type == 6)
+        {
+          for (newNodeType = 2; newNodeType <= 5; newNodeType++)
+          {
+            simulate(Max, totalPatterns, graph, p_vect, fwrite, nodeToReplace, newNodeType, Flist, p_vectLine,faultDetected);
+          }
+          newNodeType = 7;
+          simulate(Max, totalPatterns, graph, p_vect, fwrite, nodeToReplace, newNodeType, Flist, p_vectLine,faultDetected);
+        }
+      }
+    }
+    fprintf(fwrite, "%s \n", faultDetected);
+  }
 }

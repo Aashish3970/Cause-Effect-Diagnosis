@@ -46,6 +46,7 @@ typedef struct LIST_type {
    struct LIST_type *next;  //pointer to next id element( if there is no element, then it will be NULL)		
 } LIST;
 //2.Stucture declaration for NODE
+
 typedef struct NODE_type
 {
   char Name[Mnam];                      //name of the node
@@ -65,7 +66,11 @@ typedef struct PATTERN
   char PI[Mpi];
 } PATTERN;
 
-
+typedef struct faultList
+{
+  char pattern[Mpi];
+  char fault[50];
+}faultList;
 
 
 //4.Stucture declaration for FAULT
@@ -103,10 +108,10 @@ void createXORbranch(NODE *,LIST *, FILE *,int, int,int);
 void mainPart(int , int , int, int,int, int, NODE*, FILE*,FILE*,FILE*, FILE*, FILE*, int);
 int ReadVec(FILE *, PATTERN *);
 
-int simulate(int, int, NODE *, PATTERN *, FILE *);
+int simulate(int, int, NODE *, PATTERN *, FILE *,int,int, faultList*, int, char[]);
 int charToInt(char);
 char intToChar(int);
-
+void runSimulate( int, int, NODE *,PATTERN *, FILE *, faultList*);
 /***************************************************************************************************************************
  PATTERN Structure Functions
 ****************************************************************************************************************************/
