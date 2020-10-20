@@ -11,7 +11,7 @@ void main(int argc, char **argv)
 
   static PATTERN p_vact[Mpt];
   NODE graph[Mnod];
-  faultList Flist[Mnod];
+  
 
   //PATTERN vector[Mpt];                      //structure used to store the input vectors information in .vec file
 
@@ -29,36 +29,42 @@ void main(int argc, char **argv)
   Npo = countPO(graph, Max);
   Npi = countPI(graph, Max);
 
+
+
   //*************************************Run ALL ***********************************************
+if (atoi(argv[2])==0)
+{
+    fout= fopen("c17_erroneous.bench","w");
 
-  // fout= fopen("c17_erroneous.bench","w");
+    ffau = fopen("faultFile.flt", "w");
+    fprintf(ffau, "%d /0\n", 2 * Max + Max + 1);
+    fclose(ffau);
+    printf("max is %d", Max);
+    testSet1 = fopen("testSet1.test", "w");
 
-  // ffau = fopen("faultFile.flt", "w");
-  // fprintf(ffau, "%d /0\n", 2 * Max + Max + 1);
-  // fclose(ffau);
-  // printf("max is %d", Max);
-  // testSet1 = fopen("testSet1.test", "w");
+    for(NpatternsToSelect=1; NpatternsToSelect<=4; NpatternsToSelect++)
+    {
+      for(iterations=0; iterations<500; iterations++) mainPart(nodeToReplace, Max, NtestPatterns, newNodeType, Npi, Npo, graph, fout, fisc, patternFile, ftest, testSet1,NpatternsToSelect);
 
-  // for(NpatternsToSelect=1; NpatternsToSelect<=4; NpatternsToSelect++)
-  // {
-  //   for(iterations=0; iterations<500; iterations++) mainPart(nodeToReplace, Max, NtestPatterns, newNodeType, Npi, Npo, graph, fout, fisc, patternFile, ftest, testSet1,NpatternsToSelect);
-
-  // }
-  // fclose(testSet1);
-
+    }
+    fclose(testSet1);
+}
   /****************************************************RUn ALL ***************************************************************/
 
   /******************************************Simulation BEgin****************************************************************/
-  printf("********Simulation started **********\n");
-  Pat=fopen("testSet1.test","r");
-  totalPatterns=ReadVec(Pat,p_vact);
-  printf("\nTot No of Pattern: %d",totalPatterns);
-  fclose(Pat);
+ if (atoi(argv[2])==1) 
+  {
+    printf("********Simulation started **********\n");
+    Pat=fopen("testSet1.test","r");
+    totalPatterns=ReadVec(Pat,p_vact);
+    // faultList fList[totalPatterns];
+    // printf("\nTot No of Pattern: %d\n",totalPatterns);
+    fclose(Pat);
 
-  fwrite= fopen("outputs.txt","w");
+    fwrite= fopen("outputs.txt","w");
 
-  runSimulate( Max, totalPatterns, graph, p_vact, fwrite, Flist);
-
+    runSimulate( Max, totalPatterns, graph, p_vact, fwrite);
+  }
   /**************************************************************End of Simulate Part*******************/ ///
 
   // fclose(fout);

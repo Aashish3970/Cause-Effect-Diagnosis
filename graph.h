@@ -66,11 +66,12 @@ typedef struct PATTERN
   char PI[Mpi];
 } PATTERN;
 
-typedef struct faultList
-{
-  char pattern[Mpi];
-  char fault[50];
-}faultList;
+// typedef struct faultList
+// {
+//   char pattern[Mpi];
+  
+//   LIST *opFaults;
+// }faultList;
 
 
 //4.Stucture declaration for FAULT
@@ -108,10 +109,10 @@ void createXORbranch(NODE *,LIST *, FILE *,int, int,int);
 void mainPart(int , int , int, int,int, int, NODE*, FILE*,FILE*,FILE*, FILE*, FILE*, int);
 int ReadVec(FILE *, PATTERN *);
 
-int simulate(int, int, NODE *, PATTERN *, FILE *,int,int, faultList*, int, char[]);
+int simulate(int, int, NODE *, PATTERN *, FILE *,int,int, int, char [2][100]);
 int charToInt(char);
 char intToChar(int);
-void runSimulate( int, int, NODE *,PATTERN *, FILE *, faultList*);
+void runSimulate( int, int, NODE *,PATTERN *, FILE *);
 /***************************************************************************************************************************
  PATTERN Structure Functions
 ****************************************************************************************************************************/
