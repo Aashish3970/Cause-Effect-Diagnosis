@@ -481,7 +481,6 @@ const char *GetNth(struct Node *head, int index)
 {
   struct Node *current = head;
 
- 
   int count = 1;
   while (current != NULL)
   {
@@ -491,10 +490,8 @@ const char *GetNth(struct Node *head, int index)
     current = current->next;
   }
 
- 
   assert(0);
 }
-
 
 void printList(struct Node *node)
 {
@@ -505,6 +502,26 @@ void printList(struct Node *node)
   }
 }
 
+int concat(int a, int b)
+{
+
+  char s1[20];
+  char s2[20];
+
+  // Convert both the integers to string
+  sprintf(s1, "%d", a);
+  sprintf(s2, "%d", b);
+
+  // Concatenate both strings
+  strcat(s1, s2);
+
+  // Convert the concatenated string
+  // to integer
+  int c = atoi(s1);
+
+  // return the formed integer
+  return c;
+}
 /*******************Function To Read vector File**********************************************************/
 int ReadVec(FILE *Pat, PATTERN *p_vect)
 {
@@ -525,13 +542,13 @@ int ReadVec(FILE *Pat, PATTERN *p_vect)
   return a;
 }
 
-int simulate(int Tgat, int totalPatterns, NODE *node, PATTERN *p_vect, FILE *fwrite, int nodeToReplace, int newNodeType, int p_vectLine, char writeToFile[2][100])
+int simulate(int Tgat, int totalPatterns, NODE *node, PATTERN *p_vect, FILE *fwrite, int nodeToReplace, int newNodeType, int p_vectLine, char writeToFile[2][100], faultList *Flist)
 {
   int node_Line;
   LIST *temp;
   int x, y;
   x = y = 0;
-  int k;
+  int k, FlistNode;
   int totalOutputs = 0;
   totalOutputs = countPO(node, Tgat);
   int originalType;
@@ -539,11 +556,15 @@ int simulate(int Tgat, int totalPatterns, NODE *node, PATTERN *p_vect, FILE *fwr
   char faultsDetected[10] = "";
 
   int a = 0, count = 0, faultNumber = 0, opNode = 0, l;
-
+  
+  FlistNode= p_vectLine*totalOutputs;
+  
   for (node_Line = 0; node_Line <= Tgat; ++node_Line)
   {
     if (opNode == totalOutputs)
       opNode = 0;
+    
+
     if (node[node_Line].Type == INPT)
     {
       node[node_Line].Cval = charToInt(p_vect[p_vectLine].PI[a]);
@@ -624,12 +645,15 @@ int simulate(int Tgat, int totalPatterns, NODE *node, PATTERN *p_vect, FILE *fwr
     {
       if (node[node_Line].Cval != node[node_Line].Fval)
       {
-
+        int faultId = 0;
         bzero(faultsDetected, 10);
-        sprintf(faultsDetected, "%d/%d ", nodeToReplace, newNodeType);
+        faultId = concat(nodeToReplace, newNodeType);
+        InsertList(&Flist[FlistNode].opFaults, faultId);
+        sprintf(faultsDetected, "%d ", faultId);
         strcat(writeToFile[opNode], faultsDetected);
       }
       opNode++;
+      FlistNode++;
     }
   }
 }
@@ -885,7 +909,7 @@ void run(FILE *patternFile, FILE *ftest, FILE *testSet1, int Npi, int Max, int N
   fclose(patternFile);
 }
 
-void runSimulate(int Max, int totalPatterns, NODE *graph, PATTERN *p_vect, FILE *fwrite)
+void runSimulate(int Max, int totalPatterns, NODE *graph, PATTERN *p_vect, FILE *fwrite, faultList *Flist)
 {
   int nodeToReplace = 0, newNodeType = 0;
   int p_vectLine = 0, l;
@@ -912,7 +936,7 @@ void runSimulate(int Max, int totalPatterns, NODE *graph, PATTERN *p_vect, FILE 
         while (arr[k] != 0)
         {
           newNodeType = arr[k];
-          simulate(Max, totalPatterns, graph, p_vect, fwrite, nodeToReplace, newNodeType, p_vectLine, faultDetected);
+          simulate(Max, totalPatterns, graph, p_vect, fwrite, nodeToReplace, newNodeType, p_vectLine, faultDetected, Flist);
           k++;
         }
       }
@@ -921,7 +945,7 @@ void runSimulate(int Max, int totalPatterns, NODE *graph, PATTERN *p_vect, FILE 
     fprintf(fwrite, "%s", p_vect[p_vectLine].PI);
     for (l = 0; l < totalOutputs; l++)
     {
-      fprintf(fwrite, "%s \n", faultDetected[l]);
+      fprintf(fwrite, "Out%d --> %s \n", l, faultDetected[l]);
     }
   }
 }

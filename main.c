@@ -11,7 +11,8 @@ void main(int argc, char **argv)
 
   static PATTERN p_vact[Mpt];
   NODE graph[Mnod];
-  
+
+    
 
   //PATTERN vector[Mpt];                      //structure used to store the input vectors information in .vec file
 
@@ -32,39 +33,50 @@ void main(int argc, char **argv)
 
 
   //*************************************Run ALL ***********************************************
-if (atoi(argv[2])==0)
-{
-    fout= fopen("c17_erroneous.bench","w");
+// if (atoi(argv[2])==0)
+// {
+//     fout= fopen("c17_erroneous.bench","w");
 
-    ffau = fopen("faultFile.flt", "w");
-    fprintf(ffau, "%d /0\n", 2 * Max + Max + 1);
-    fclose(ffau);
-    printf("max is %d", Max);
-    testSet1 = fopen("testSet1.test", "w");
+//     ffau = fopen("faultFile.flt", "w");
+//     fprintf(ffau, "%d /0\n", 2 * Max + Max + 1);
+//     fclose(ffau);
+//     printf("max is %d", Max);
+//     testSet1 = fopen("testSet1.test", "w");
 
-    for(NpatternsToSelect=1; NpatternsToSelect<=4; NpatternsToSelect++)
-    {
-      for(iterations=0; iterations<500; iterations++) mainPart(nodeToReplace, Max, NtestPatterns, newNodeType, Npi, Npo, graph, fout, fisc, patternFile, ftest, testSet1,NpatternsToSelect);
+//     for(NpatternsToSelect=1; NpatternsToSelect<=4; NpatternsToSelect++)
+//     {
+//       for(iterations=0; iterations<500; iterations++) mainPart(nodeToReplace, Max, NtestPatterns, newNodeType, Npi, Npo, graph, fout, fisc, patternFile, ftest, testSet1,NpatternsToSelect);
 
-    }
-    fclose(testSet1);
-}
+//     }
+//     fclose(testSet1);
+// }
   /****************************************************RUn ALL ***************************************************************/
 
   /******************************************Simulation BEgin****************************************************************/
- if (atoi(argv[2])==1) 
-  {
+//  if (atoi(argv[2])==1) 
+//   {
     printf("********Simulation started **********\n");
     Pat=fopen("testSet1.test","r");
     totalPatterns=ReadVec(Pat,p_vact);
+    static faultList Flist[300000];
     // faultList fList[totalPatterns];
     // printf("\nTot No of Pattern: %d\n",totalPatterns);
     fclose(Pat);
 
     fwrite= fopen("outputs.txt","w");
 
-    runSimulate( Max, totalPatterns, graph, p_vact, fwrite);
-  }
+    runSimulate( Max, totalPatterns, graph, p_vact, fwrite, Flist);
+
+    int s;
+    
+    PrintList(Flist[0].opFaults);
+
+    for(s=0; s<totalPatterns;s++)
+    {
+      PrintList(Flist[s].opFaults); 
+      printf("\n");
+    }
+  // }
   /**************************************************************End of Simulate Part*******************/ ///
 
   // fclose(fout);
