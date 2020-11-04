@@ -556,14 +556,14 @@ int simulate(int Tgat, int totalPatterns, NODE *node, PATTERN *p_vect, FILE *fwr
   char faultsDetected[10] = "";
 
   int a = 0, count = 0, faultNumber = 0, opNode = 0, l;
+
+  FlistNode = p_vectLine * totalOutputs;
   
-  FlistNode= p_vectLine*totalOutputs;
-  
+
   for (node_Line = 0; node_Line <= Tgat; ++node_Line)
   {
     if (opNode == totalOutputs)
       opNode = 0;
-    
 
     if (node[node_Line].Type == INPT)
     {
@@ -648,6 +648,7 @@ int simulate(int Tgat, int totalPatterns, NODE *node, PATTERN *p_vect, FILE *fwr
         int faultId = 0;
         bzero(faultsDetected, 10);
         faultId = concat(nodeToReplace, newNodeType);
+        // InsertList(&Flist[FlistNode].opFaults, faultId);
         InsertList(&Flist[FlistNode].opFaults, faultId);
         sprintf(faultsDetected, "%d ", faultId);
         strcat(writeToFile[opNode], faultsDetected);
@@ -918,34 +919,47 @@ void runSimulate(int Max, int totalPatterns, NODE *graph, PATTERN *p_vect, FILE 
 
   int totalOutputs = countPO(graph, Max);
   char faultDetected[2][100];
-
-  for (p_vectLine = 0; p_vectLine < totalPatterns; ++p_vectLine)
-  {
-    for (l = 0; l < 2; l++)
+  int range;
+  int lineStart = 0, lineEnd = 29;
+  // Flist= (struct faultList *) malloc(30*totalOutputs* sizeof(struct faultList));
+  int testSetCount;
+  // while (lineEnd != 150000)
+  // {
+    for (p_vectLine = lineStart; p_vectLine < lineEnd; ++p_vectLine)
     {
-      bzero(faultDetected[l], 100);
-    }
-
-    for (nodeToReplace = 0; nodeToReplace <= Max; nodeToReplace++)
-    {
-      k = 0;
-      if (graph[nodeToReplace].Type != 0 && graph[nodeToReplace].Type != 1 && graph[nodeToReplace].Type != 10)
+      for (l = 0; l < 2; l++)
       {
-        arr = returnList(graph[nodeToReplace].Type);
+        bzero(faultDetected[l], 100);
+      }
 
-        while (arr[k] != 0)
+      for (nodeToReplace = 0; nodeToReplace <= Max; nodeToReplace++)
+      {
+        k = 0;
+        if (graph[nodeToReplace].Type != 0 && graph[nodeToReplace].Type != 1 && graph[nodeToReplace].Type != 10)
         {
-          newNodeType = arr[k];
-          simulate(Max, totalPatterns, graph, p_vect, fwrite, nodeToReplace, newNodeType, p_vectLine, faultDetected, Flist);
-          k++;
+          arr = returnList(graph[nodeToReplace].Type);
+
+          while (arr[k] != 0)
+          {
+            newNodeType = arr[k];
+            simulate(Max, totalPatterns, graph, p_vect, fwrite, nodeToReplace, newNodeType, p_vectLine, faultDetected, Flist);
+            k++;
+          }
         }
       }
-    }
 
-    fprintf(fwrite, "%s", p_vect[p_vectLine].PI);
-    for (l = 0; l < totalOutputs; l++)
-    {
-      fprintf(fwrite, "Out%d --> %s \n", l, faultDetected[l]);
-    }
+      // fprintf(fwrite, "%s", p_vect[p_vectLine].PI);
+      // for (l = 0; l < totalOutputs; l++)
+      // {
+      //   fprintf(fwrite, "Out%d --> %s \n", l, faultDetected[l]);
+      // }
+    // }
+
+
+    // if ((lineEnd /range) == 500) range=range*2;
+    // lineStart=lineEnd;
+    // lineEnd=lineEnd+range;
   }
+
+
 }

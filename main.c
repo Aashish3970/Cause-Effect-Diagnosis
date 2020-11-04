@@ -58,9 +58,8 @@ void main(int argc, char **argv)
     printf("********Simulation started **********\n");
     Pat=fopen("testSet1.test","r");
     totalPatterns=ReadVec(Pat,p_vact);
-    static faultList Flist[300000];
-    // faultList fList[totalPatterns];
-    // printf("\nTot No of Pattern: %d\n",totalPatterns);
+    // struct faultList* Flist;
+    faultList Flist[60];
     fclose(Pat);
 
     fwrite= fopen("outputs.txt","w");
@@ -69,13 +68,15 @@ void main(int argc, char **argv)
 
     int s;
     
-    PrintList(Flist[0].opFaults);
+    // PrintList(Flist[0].opFaults);
 
-    for(s=0; s<totalPatterns;s++)
+    for(s=0; s<30;s++)
     {
       PrintList(Flist[s].opFaults); 
       printf("\n");
     }
+
+    // free(Flist);
   // }
   /**************************************************************End of Simulate Part*******************/ ///
 
