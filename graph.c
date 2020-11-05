@@ -558,7 +558,6 @@ int simulate(int Tgat, int totalPatterns, NODE *node, PATTERN *p_vect, FILE *fwr
   int a = 0, count = 0, faultNumber = 0, opNode = 0, l;
 
   FlistNode = p_vectLine * totalOutputs;
-  
 
   for (node_Line = 0; node_Line <= Tgat; ++node_Line)
   {
@@ -925,41 +924,52 @@ void runSimulate(int Max, int totalPatterns, NODE *graph, PATTERN *p_vect, FILE 
   int testSetCount;
   // while (lineEnd != 150000)
   // {
-    for (p_vectLine = lineStart; p_vectLine < lineEnd; ++p_vectLine)
+  for (p_vectLine = lineStart; p_vectLine < lineEnd; ++p_vectLine)
+  {
+    for (l = 0; l < 2; l++)
     {
-      for (l = 0; l < 2; l++)
-      {
-        bzero(faultDetected[l], 100);
-      }
+      bzero(faultDetected[l], 100);
+    }
 
-      for (nodeToReplace = 0; nodeToReplace <= Max; nodeToReplace++)
+    for (nodeToReplace = 0; nodeToReplace <= Max; nodeToReplace++)
+    {
+      k = 0;
+      if (graph[nodeToReplace].Type != 0 && graph[nodeToReplace].Type != 1 && graph[nodeToReplace].Type != 10)
       {
-        k = 0;
-        if (graph[nodeToReplace].Type != 0 && graph[nodeToReplace].Type != 1 && graph[nodeToReplace].Type != 10)
+        arr = returnList(graph[nodeToReplace].Type);
+
+        while (arr[k] != 0)
         {
-          arr = returnList(graph[nodeToReplace].Type);
-
-          while (arr[k] != 0)
-          {
-            newNodeType = arr[k];
-            simulate(Max, totalPatterns, graph, p_vect, fwrite, nodeToReplace, newNodeType, p_vectLine, faultDetected, Flist);
-            k++;
-          }
+          newNodeType = arr[k];
+          simulate(Max, totalPatterns, graph, p_vect, fwrite, nodeToReplace, newNodeType, p_vectLine, faultDetected, Flist);
+          k++;
         }
       }
+    }
 
-      // fprintf(fwrite, "%s", p_vect[p_vectLine].PI);
-      // for (l = 0; l < totalOutputs; l++)
-      // {
-      //   fprintf(fwrite, "Out%d --> %s \n", l, faultDetected[l]);
-      // }
+    // fprintf(fwrite, "%s", p_vect[p_vectLine].PI);
+    // for (l = 0; l < totalOutputs; l++)
+    // {
+    //   fprintf(fwrite, "Out%d --> %s \n", l, faultDetected[l]);
     // }
-
+    // }
 
     // if ((lineEnd /range) == 500) range=range*2;
     // lineStart=lineEnd;
     // lineEnd=lineEnd+range;
   }
 
-
+  int selectedFault = Flist[0].opFaults->id;
+  int a;
+  for (a = 0; a < 60; a++)
+  {
+    while (Flist[a].opFaults->next != NULL)
+    {
+      if (Flist[a].opFaults->id == selectedFault){
+        //discard the faultList altogether
+        //and take note of the faults in this faultList in an array 
+        //and remove these faults from other faultList also
+      }
+    }
+  }
 }
