@@ -182,6 +182,12 @@ void InitializeCircuit(NODE *graph, int num)
   graph[num].Fin = graph[num].Fot = NULL;
   return;
 } //end of InitializeCircuit
+
+void InitializeFaultList(faultList *Flist, int num)
+{
+  Flist[num].opFaults = NULL;
+  Flist[num].Mark = 0;
+}
 /****************************************************************************************************************************
 Convert (char *) Typee read to (int)     
 ****************************************************************************************************************************/
@@ -502,7 +508,7 @@ void printList(struct Node *node)
   }
 }
 
-int concat(int a, int b)
+void concat(int a, int b, int *faultId)
 {
 
   char s1[20];
@@ -517,10 +523,9 @@ int concat(int a, int b)
 
   // Convert the concatenated string
   // to integer
-  int c = atoi(s1);
+  *faultId = atoi(s1);
 
   // return the formed integer
-  return c;
 }
 /*******************Function To Read vector File**********************************************************/
 int ReadVec(FILE *Pat, PATTERN *p_vect)
@@ -646,7 +651,7 @@ int simulate(int Tgat, int totalPatterns, NODE *node, PATTERN *p_vect, FILE *fwr
       {
         int faultId = 0;
         bzero(faultsDetected, 10);
-        faultId = concat(nodeToReplace, newNodeType);
+        concat(nodeToReplace, newNodeType, &faultId);
         // InsertList(&Flist[FlistNode].opFaults, faultId);
         InsertList(&Flist[FlistNode].opFaults, faultId);
         sprintf(faultsDetected, "%d ", faultId);
@@ -919,8 +924,8 @@ void runSimulate(int Max, int totalPatterns, NODE *graph, PATTERN *p_vect, FILE 
   int totalOutputs = countPO(graph, Max);
   char faultDetected[2][100];
   int range;
-  int lineStart = 0, lineEnd = 29;
-  // Flist= (struct faultList *) malloc(30*totalOutputs* sizeof(struct faultList));
+  int lineStart = 0, lineEnd = 2;
+
   int testSetCount;
   // while (lineEnd != 150000)
   // {
@@ -961,15 +966,44 @@ void runSimulate(int Max, int totalPatterns, NODE *graph, PATTERN *p_vect, FILE 
 
   int selectedFault = Flist[0].opFaults->id;
   int a;
+  int presentPattern = 0;
+  
+  Flist[a].opFaults;
+   //this is a pointer to a list
+  struct LIST *head;
+  // struct LIST *FaultsToBeRemoved;
+  
   for (a = 0; a < 60; a++)
   {
-    while (Flist[a].opFaults->next != NULL)
+    if (a != presentPattern)
     {
-      if (Flist[a].opFaults->id == selectedFault){
-        //discard the faultList altogether
-        //and take note of the faults in this faultList in an array 
-        //and remove these faults from other faultList also
+      while (Flist[a].opFaults->next != NULL)
+      {
+        head = Flist[a].opFaults; //save the address of begining of list
+        if (Flist[a].opFaults->id == selectedFault)
+        {
+          Flist[a].Mark = 1; //Discard the faultList altogether
+          Flist[a].opFaults->Mark = 1;
+
+          //now loop thorough this list and add all faults of this list to faultsToBeRemoved
+          Flist[a].opFaults = head;
+          while (Flist[a].opFaults->next != NULL)
+          {
+            if (Flist[a].opFaults->id != selectedFault)
+            {
+              printf("I am here");
+              // InsertList(&FaultsToBeRemoved, Flist[a].opFaults->id);
+              // InsertList(&FaultsToBeRemoved, Flist[a].opFaults->id);
+            }
+            Flist[a].opFaults = Flist[a].opFaults->next;
+          }
+          Flist[a].opFaults = head;
+          return;
+          //and remove these faults from other faultList also
+        }
+        Flist[a].opFaults = Flist[a].opFaults->next;
       }
+      Flist[a].opFaults = head; // repoint the Flist[a].opFaults to the head of the list
     }
   }
 }

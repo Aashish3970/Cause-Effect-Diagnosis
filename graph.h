@@ -41,9 +41,10 @@ Constant Declarations
 Structure Declarations 
 ****************************************************************************************************************************/
 //1.Stucture declaration for LIST
-typedef struct LIST_type {
-   int  id;		   //id for current element		
-   struct LIST_type *next;  //pointer to next id element( if there is no element, then it will be NULL)		
+typedef struct LIST {
+   int  id;	
+   int Mark;	   //id for current element		
+   struct LIST *next;  //pointer to next id element( if there is no element, then it will be NULL)		
 } LIST;
 //2.Stucture declaration for NODE
 
@@ -69,6 +70,8 @@ typedef struct PATTERN
 typedef struct faultList
 {
   LIST *opFaults;
+  int Mark;
+
 }faultList;
 
 
@@ -93,7 +96,7 @@ void InitializeCircuit(NODE *,int);
 int AssignTypee(char *);
 void PrintCircuit(NODE *,int);
 void ClearCircuit(NODE *,int);
-
+void concat (int, int , int*);
 int countPI(NODE*,int);
 int countPO(NODE*,int);
 void makeNewISC(NODE *, NODE *,int,int);
@@ -111,6 +114,7 @@ int simulate(int, int, NODE *, PATTERN *, FILE *,int,int, int, char [2][100], fa
 int charToInt(char);
 char intToChar(int);
 void runSimulate( int, int, NODE *,PATTERN *, FILE *, faultList *);
+void InitializeFaultList(faultList *, int);
 /***************************************************************************************************************************
  PATTERN Structure Functions
 ****************************************************************************************************************************/
