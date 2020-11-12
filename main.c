@@ -68,8 +68,11 @@ void main(int argc, char **argv)
     fclose(Pat);
 
     fwrite= fopen("outputs.txt","w");
-
-    runSimulate( Max, totalPatterns, graph, p_vact, fwrite, Flist);
+    struct faultList *faultsToBeRemoved= ( struct faultList*) malloc (sizeof(struct faultList));
+    faultsToBeRemoved->Mark=0;
+    faultsToBeRemoved->length=0;
+    faultsToBeRemoved->opFaults= NULL;
+    runSimulate( Max, totalPatterns, graph, p_vact, fwrite, Flist, faultsToBeRemoved);
 
     int s;
     
@@ -80,7 +83,7 @@ void main(int argc, char **argv)
       PrintList(Flist[s].opFaults); 
       printf("\n");
     }
-
+      free (faultsToBeRemoved);
      free(Flist);
   // }
   /**************************************************************End of Simulate Part*******************/ ///

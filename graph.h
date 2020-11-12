@@ -71,6 +71,7 @@ typedef struct faultList
 {
   LIST *opFaults;
   int Mark;
+  int length;
 
 }faultList;
 
@@ -113,7 +114,7 @@ int ReadVec(FILE *, PATTERN *);
 int simulate(int, int, NODE *, PATTERN *, FILE *,int,int, int, char [2][100], faultList*);
 int charToInt(char);
 char intToChar(int);
-void runSimulate( int, int, NODE *,PATTERN *, FILE *, faultList *);
+void runSimulate( int, int, NODE *,PATTERN *, FILE *, faultList *, faultList *);
 void InitializeFaultList(faultList *, int);
 /***************************************************************************************************************************
  PATTERN Structure Functions

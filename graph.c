@@ -187,6 +187,7 @@ void InitializeFaultList(faultList *Flist, int num)
 {
   Flist[num].opFaults = NULL;
   Flist[num].Mark = 0;
+  Flist[num].length = 0;
 }
 /****************************************************************************************************************************
 Convert (char *) Typee read to (int)     
@@ -654,6 +655,7 @@ int simulate(int Tgat, int totalPatterns, NODE *node, PATTERN *p_vect, FILE *fwr
         concat(nodeToReplace, newNodeType, &faultId);
         // InsertList(&Flist[FlistNode].opFaults, faultId);
         InsertList(&Flist[FlistNode].opFaults, faultId);
+        Flist[FlistNode].length += 1;
         sprintf(faultsDetected, "%d ", faultId);
         strcat(writeToFile[opNode], faultsDetected);
       }
@@ -914,7 +916,7 @@ void run(FILE *patternFile, FILE *ftest, FILE *testSet1, int Npi, int Max, int N
   fclose(patternFile);
 }
 
-void runSimulate(int Max, int totalPatterns, NODE *graph, PATTERN *p_vect, FILE *fwrite, faultList *Flist)
+void runSimulate(int Max, int totalPatterns, NODE *graph, PATTERN *p_vect, FILE *fwrite, faultList *Flist, faultList *faultsToBeRemoved)
 {
   int nodeToReplace = 0, newNodeType = 0;
   int p_vectLine = 0, l;
@@ -924,7 +926,7 @@ void runSimulate(int Max, int totalPatterns, NODE *graph, PATTERN *p_vect, FILE 
   int totalOutputs = countPO(graph, Max);
   char faultDetected[2][100];
   int range;
-  int lineStart = 0, lineEnd = 2;
+  int lineStart = 0, lineEnd = 30;
 
   int testSetCount;
   // while (lineEnd != 150000)
@@ -951,59 +953,73 @@ void runSimulate(int Max, int totalPatterns, NODE *graph, PATTERN *p_vect, FILE 
         }
       }
     }
-
-    // fprintf(fwrite, "%s", p_vect[p_vectLine].PI);
-    // for (l = 0; l < totalOutputs; l++)
-    // {
-    //   fprintf(fwrite, "Out%d --> %s \n", l, faultDetected[l]);
-    // }
-    // }
-
-    // if ((lineEnd /range) == 500) range=range*2;
-    // lineStart=lineEnd;
-    // lineEnd=lineEnd+range;
   }
-
-  int selectedFault = Flist[0].opFaults->id;
+  int lengthOfList= Flist[0].length;
+  int sequenceLength=1;
+  int selectedFault[lengthOfList];
+  int p;
+  
   int a;
   int presentPattern = 0;
-  
+
   Flist[a].opFaults;
-   //this is a pointer to a list
-  struct LIST *head;
-  // struct LIST *FaultsToBeRemoved;
   
+  struct LIST *head;
+  for (p=0; p<sequenceLength;p++)
+  {
+    selectedFault[sequenceLength]= head->id;
+    head= head->next; 
+  }
+
   for (a = 0; a < 60; a++)
   {
+
     if (a != presentPattern)
     {
-      while (Flist[a].opFaults->next != NULL)
+      head = Flist[a].opFaults;
+      while (head->next != NULL)
       {
-        head = Flist[a].opFaults; //save the address of begining of list
-        if (Flist[a].opFaults->id == selectedFault)
-        {
-          Flist[a].Mark = 1; //Discard the faultList altogether
-          Flist[a].opFaults->Mark = 1;
 
-          //now loop thorough this list and add all faults of this list to faultsToBeRemoved
-          Flist[a].opFaults = head;
-          while (Flist[a].opFaults->next != NULL)
-          {
-            if (Flist[a].opFaults->id != selectedFault)
-            {
-              printf("I am here");
-              // InsertList(&FaultsToBeRemoved, Flist[a].opFaults->id);
-              // InsertList(&FaultsToBeRemoved, Flist[a].opFaults->id);
-            }
-            Flist[a].opFaults = Flist[a].opFaults->next;
-          }
-          Flist[a].opFaults = head;
-          return;
-          //and remove these faults from other faultList also
+        if (head->id == selectedFault)
+        {
+          Flist[a].Mark = 1;
         }
-        Flist[a].opFaults = Flist[a].opFaults->next;
+        head = head->next;
       }
-      Flist[a].opFaults = head; // repoint the Flist[a].opFaults to the head of the list
+
+      // we have marked the F[a] if it contains the selected fault. if it doesnot contain slected fault, it is unmarked. So read all faults of unmarked list.
+      if (Flist[a].Mark != 1)
+      {
+        head = Flist[a].opFaults;
+        while (head->next != NULL)
+        {
+          InsertList(&faultsToBeRemoved->opFaults, head->id);
+          head = head->next;
+        }
+      }
+    }
+  }
+
+  for (a = 0; a < 60; a++)
+  {
+    struct LIST *head1;
+    head1 = faultsToBeRemoved->opFaults;
+    int selectedFaultToRemove;
+    while (head1->next != NULL)
+    {
+      selectedFaultToRemove= head->id;
+      if (Flist[a].Mark != 1)
+      {
+        head = Flist[a].opFaults;
+        while (head->next != NULL)
+        {
+          if(head->id == selectedFaultToRemove){
+            head->Mark=1;
+            head= head->next;
+          }
+        }
+      }
+    head1= head1->next;
     }
   }
 }
