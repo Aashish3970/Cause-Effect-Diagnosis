@@ -528,6 +528,21 @@ void concat(int a, int b, int *faultId)
 
   // return the formed integer
 }
+
+int range(int reached, int n)
+{
+  int range;
+  if (0 <= reached && reached <n * 500)
+    range = n;
+  if (n * 500 <= reached && reached < 3 * n * 500)
+    range = 2 * n;
+  if (3 * n * 500 <= reached && reached< 6 * n * 500)
+    range = 3 * n;
+  if (6 * n * 500 <= reached && reached < 10 * n * 500)
+    range = 4 * n;
+  
+  return range;
+}
 /*******************Function To Read vector File**********************************************************/
 int ReadVec(FILE *Pat, PATTERN *p_vect)
 {
@@ -916,7 +931,7 @@ void run(FILE *patternFile, FILE *ftest, FILE *testSet1, int Npi, int Max, int N
   fclose(patternFile);
 }
 
-void runSimulate(int Max, int totalPatterns, NODE *graph, PATTERN *p_vect, FILE *fwrite, faultList *Flist, faultList *faultsToBeRemoved)
+void runSimulate(int Max, int totalPatterns, NODE *graph, PATTERN *p_vect, FILE *fwrite, faultList *Flist, faultList *faultsToBeRemoved, int lineStart,int lineEnd,int testSet)
 {
   int nodeToReplace = 0, newNodeType = 0;
   int p_vectLine = 0, l;
@@ -926,7 +941,7 @@ void runSimulate(int Max, int totalPatterns, NODE *graph, PATTERN *p_vect, FILE 
   int totalOutputs = countPO(graph, Max);
   char faultDetected[2][100];
   int range;
-  int lineStart = 0, lineEnd = 30;
+  
 
   int testSetCount;
   // while (lineEnd != 150000)
@@ -954,41 +969,66 @@ void runSimulate(int Max, int totalPatterns, NODE *graph, PATTERN *p_vect, FILE 
       }
     }
   }
-  int lengthOfList= Flist[0].length;
-  int sequenceLength=1;
-  int selectedFault[lengthOfList];
-  int p;
-  
-  int a;
+
+  int lengthOfList = 0;
+
+  // int selectedFault = Flist[0].opFaults->id;
+  int selectedFault[30];
+  int p = 0;
+  int resolution = 0;
+  int a, faultCount = 0;
   int presentPattern = 0;
-
+  int begin = 0;
   Flist[a].opFaults;
-  
+  int minRes = 100, avgRes = 0, maxRes = 0;
   struct LIST *head;
-  for (p=0; p<sequenceLength;p++)
-  {
-    selectedFault[sequenceLength]= head->id;
-    head= head->next; 
-  }
 
-  for (a = 0; a < 60; a++)
+  while (faultCount < 30 && p < 30)
   {
-
-    if (a != presentPattern)
+    head = Flist[faultCount].opFaults;
+    lengthOfList = Flist[faultCount].length;
+    for (p = begin; p < begin + lengthOfList; p++)
     {
+      selectedFault[p] = head->id;
+
+      head = head->next;
+    }
+    begin = p;
+    faultCount++;
+  }
+  int totalL;
+  // for (sel = 0; sel < lengthOfList; sel++)
+  // {
+  for (totalL = 0; totalL < 15; totalL++)
+  {
+    resolution = 0;
+    int randomFault = selectedFault[(rand() % 30)];
+    int nMarked = 0;
+    for (a = 0; a < 60; a++)
+    {
+
+      // if (a != presentPattern)
+      // {
+      // if (Flist[a].Mark != 2)
+      // {
       head = Flist[a].opFaults;
-      while (head->next != NULL)
+      while (head->next != NULL && randomFault >= head->id)
       {
 
-        if (head->id == selectedFault)
+        if (head->id == randomFault)
         {
           Flist[a].Mark = 1;
+          nMarked++;
+          presentPattern = a;
+          break;
         }
+        else
+          Flist[a].Mark = 2; //2 means neglect
+
         head = head->next;
       }
 
-      // we have marked the F[a] if it contains the selected fault. if it doesnot contain slected fault, it is unmarked. So read all faults of unmarked list.
-      if (Flist[a].Mark != 1)
+      if (Flist[a].Mark == 2)
       {
         head = Flist[a].opFaults;
         while (head->next != NULL)
@@ -997,29 +1037,74 @@ void runSimulate(int Max, int totalPatterns, NODE *graph, PATTERN *p_vect, FILE 
           head = head->next;
         }
       }
+      // }
+      // }
+      // }
     }
-  }
 
-  for (a = 0; a < 60; a++)
-  {
-    struct LIST *head1;
-    head1 = faultsToBeRemoved->opFaults;
-    int selectedFaultToRemove;
-    while (head1->next != NULL)
+    for (a = 0; a < 60; a++)
     {
-      selectedFaultToRemove= head->id;
-      if (Flist[a].Mark != 1)
+      struct LIST *head1;
+      head1 = faultsToBeRemoved->opFaults;
+      int selectedFaultToRemove;
+      if (Flist[a].Mark == 1) //go inside the valid lists and remove the faultToBeRemoved
       {
-        head = Flist[a].opFaults;
-        while (head->next != NULL)
+        while (head1->next != NULL)
         {
-          if(head->id == selectedFaultToRemove){
-            head->Mark=1;
-            head= head->next;
+          selectedFaultToRemove = head1->id;
+
+          head = Flist[a].opFaults;
+          while (head->next != NULL && selectedFaultToRemove >= head->id)
+          {
+            if (head->id == selectedFaultToRemove)
+            {
+              head->Mark = 1;
+              break;
+            }
+            head = head->next;
+          }
+
+          head1 = head1->next;
+        }
+      }
+    }
+
+    int count1 = 0;
+    int presentId = 0;
+
+    struct LIST *head2, *head3;
+    head2 = Flist[presentPattern].opFaults;
+    while (head2->next != NULL)
+    {
+
+      presentId = head2->id;
+      for (a = 0; a < 60; a++)
+      {
+        if (Flist[a].Mark == 1 && a != presentPattern)
+        {
+          head3 = Flist[a].opFaults;
+          while (head3->next != NULL)
+          {
+            if (head3->id == presentId)
+            {
+              count1++;
+              break;
+            }
+            head3 = head3->next;
           }
         }
       }
-    head1= head1->next;
+      if (count1 == nMarked - 1)
+        resolution++;
+      count1 = 0;
+      head2 = head2->next;
     }
+    // if (resolution < minRes)
+    minRes = 1; //resolution;
+    if (resolution > maxRes)
+      maxRes = resolution;
+    avgRes = (minRes + maxRes) / 2;
   }
+  printf("TestSet %d Min= %d,Max= %d, Avg=%d \n",testSet, minRes, maxRes, avgRes);
+  //Crete a completed List to make list of faults that are checked
 }

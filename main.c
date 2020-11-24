@@ -12,8 +12,6 @@ void main(int argc, char **argv)
   static PATTERN p_vact[Mpt];
   NODE graph[Mnod];
 
-    
-
   //PATTERN vector[Mpt];                      //structure used to store the input vectors information in .vec file
 
   //FAULT stuck[Mft];                      //structure used to store the faults information in .faults file
@@ -30,61 +28,72 @@ void main(int argc, char **argv)
   Npo = countPO(graph, Max);
   Npi = countPI(graph, Max);
 
-
-
   //*************************************Run ALL ***********************************************
-// if (atoi(argv[2])==0)
-// {
-//     fout= fopen("c17_erroneous.bench","w");
+  // if (atoi(argv[2])==0)
+  // {
+  //     fout= fopen("c17_erroneous.bench","w");
 
-//     ffau = fopen("faultFile.flt", "w");
-//     fprintf(ffau, "%d /0\n", 2 * Max + Max + 1);
-//     fclose(ffau);
-//     printf("max is %d", Max);
-//     testSet1 = fopen("testSet1.test", "w");
+  //     ffau = fopen("faultFile.flt", "w");
+  //     fprintf(ffau, "%d /0\n", 2 * Max + Max + 1);
+  //     fclose(ffau);
+  //     printf("max is %d", Max);
+  //     testSet1 = fopen("testSet1.test", "w");
 
-//     for(NpatternsToSelect=1; NpatternsToSelect<=4; NpatternsToSelect++)
-//     {
-//       for(iterations=0; iterations<500; iterations++) mainPart(nodeToReplace, Max, NtestPatterns, newNodeType, Npi, Npo, graph, fout, fisc, patternFile, ftest, testSet1,NpatternsToSelect);
+  //     for(NpatternsToSelect=1; NpatternsToSelect<=4; NpatternsToSelect++)
+  //     {
+  //       for(iterations=0; iterations<500; iterations++) mainPart(nodeToReplace, Max, NtestPatterns, newNodeType, Npi, Npo, graph, fout, fisc, patternFile, ftest, testSet1,NpatternsToSelect);
 
-//     }
-//     fclose(testSet1);
-// }
+  //     }
+  //     fclose(testSet1);
+  // }
   /****************************************************RUn ALL ***************************************************************/
 
   /******************************************Simulation BEgin****************************************************************/
-//  if (atoi(argv[2])==1) 
-//   {
-    printf("********Simulation started **********\n");
-    Pat=fopen("testSet1.test","r");
-    totalPatterns=ReadVec(Pat,p_vact);
-    struct faultList* Flist;
-    Flist= (struct faultList *) malloc(30*Npo *sizeof(struct faultList));
-    int k;
-    for(k=0; k<30*Npo;k++){
+  //  if (atoi(argv[2])==1)
+  //   {
+  printf("********Simulation started **********\n");
+  Pat = fopen("testSet1.test", "r");
+  totalPatterns = ReadVec(Pat, p_vact);
+  struct faultList *Flist;
+  Flist = (struct faultList *)malloc(30 * Npo * sizeof(struct faultList));
+  int k;
+
+  // faultList Flist[60];
+  fclose(Pat);
+
+  fwrite = fopen("outputs.txt", "w");
+  struct faultList *faultsToBeRemoved = (struct faultList *)malloc(sizeof(struct faultList));
+
+  int lineStart = 0;
+  int lineEnd = 0;
+  int c17total = 30;
+  int testSet = 1;
+
+  while (lineEnd < 10 * c17total * 500)
+  {
+    for (k = 0; k < 30 * Npo; k++)
+    {
       InitializeFaultList(Flist, k);
     }
-    // faultList Flist[60];
-    fclose(Pat);
+    faultsToBeRemoved->Mark = 0;
+    faultsToBeRemoved->length = 0;
+    faultsToBeRemoved->opFaults = NULL;
+    lineEnd = lineEnd + range(lineEnd, c17total);
+    runSimulate(Max, totalPatterns, graph, p_vact, fwrite, Flist, faultsToBeRemoved, lineStart, lineEnd, testSet);
+    lineStart = lineEnd;
+    testSet++;
+  }
+  // int s;
 
-    fwrite= fopen("outputs.txt","w");
-    struct faultList *faultsToBeRemoved= ( struct faultList*) malloc (sizeof(struct faultList));
-    faultsToBeRemoved->Mark=0;
-    faultsToBeRemoved->length=0;
-    faultsToBeRemoved->opFaults= NULL;
-    runSimulate( Max, totalPatterns, graph, p_vact, fwrite, Flist, faultsToBeRemoved);
+  // PrintList(Flist[0].opFaults);
 
-    int s;
-    
-    // PrintList(Flist[0].opFaults);
-
-    for(s=0; s<60;s++)
-    {
-      PrintList(Flist[s].opFaults); 
-      printf("\n");
-    }
-      free (faultsToBeRemoved);
-     free(Flist);
+  // for(s=0; s<60;s++)
+  // {
+  //   PrintList(Flist[s].opFaults);
+  //   printf("\n");
+  // }
+  free(faultsToBeRemoved);
+  free(Flist);
   // }
   /**************************************************************End of Simulate Part*******************/ ///
 
@@ -105,4 +114,4 @@ void main(int argc, char **argv)
   //for(a=0;a<Total;a++){ bzero(vector[a].piv,Mpi); }                //clear memeory for all members of vector
   return;
 } //end of main
-/****************************************************************************************************************************/
+  /****************************************************************************************************************************/
