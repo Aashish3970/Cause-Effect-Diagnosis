@@ -111,10 +111,10 @@ void createXORbranch(NODE *,LIST *, FILE *,int, int,int);
 void mainPart(int , int , int, int,int, int, NODE*, FILE*,FILE*,FILE*, FILE*, FILE*, int);
 int ReadVec(FILE *, PATTERN *);
 
-int simulate(int, int, NODE *, PATTERN *, FILE *,int,int, int, char [2][100], faultList*);
+int simulate(int, int, NODE *, PATTERN *, FILE *,int,int, int, char [2][100], faultList*,int);
 int charToInt(char);
 char intToChar(int);
-void runSimulate( int, int, NODE *,PATTERN *, FILE *, faultList *, faultList *,int, int,int);
+void runSimulate( int, int, NODE *,PATTERN *, FILE *, faultList *, faultList *,int, int,int,int);
 void InitializeFaultList(faultList *, int);
 int range (int,int);
 /***************************************************************************************************************************

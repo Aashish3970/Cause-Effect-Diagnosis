@@ -55,14 +55,14 @@ void main(int argc, char **argv)
   Pat = fopen("testSet1.test", "r");
   totalPatterns = ReadVec(Pat, p_vact);
   struct faultList *Flist;
-  Flist = (struct faultList *)malloc(30 * Npo * sizeof(struct faultList));
+
   int k;
 
   // faultList Flist[60];
   fclose(Pat);
 
   fwrite = fopen("outputs.txt", "w");
-  struct faultList *faultsToBeRemoved = (struct faultList *)malloc(sizeof(struct faultList));
+  
 
   int lineStart = 0;
   int lineEnd = 0;
@@ -71,7 +71,9 @@ void main(int argc, char **argv)
 
   while (lineEnd < 10 * c17total * 500)
   {
-    for (k = 0; k < 30 * Npo; k++)
+    struct faultList *faultsToBeRemoved = (struct faultList *)malloc(sizeof(struct faultList));
+    Flist = (struct faultList *)malloc(range(lineStart, c17total) * Npo * sizeof(struct faultList));
+    for (k = 0; k < range(lineEnd, c17total)* Npo; k++)
     {
       InitializeFaultList(Flist, k);
     }
@@ -79,9 +81,14 @@ void main(int argc, char **argv)
     faultsToBeRemoved->length = 0;
     faultsToBeRemoved->opFaults = NULL;
     lineEnd = lineEnd + range(lineEnd, c17total);
-    runSimulate(Max, totalPatterns, graph, p_vact, fwrite, Flist, faultsToBeRemoved, lineStart, lineEnd, testSet);
+
+
+    runSimulate(Max, totalPatterns, graph, p_vact, fwrite, Flist, faultsToBeRemoved, lineStart, lineEnd, testSet, Npo*range(lineStart,c17total));
+    printf("Start %d End %d\n", lineStart,lineEnd);
     lineStart = lineEnd;
     testSet++;
+    free(faultsToBeRemoved);
+    free(Flist);
   }
   // int s;
 
@@ -92,8 +99,7 @@ void main(int argc, char **argv)
   //   PrintList(Flist[s].opFaults);
   //   printf("\n");
   // }
-  free(faultsToBeRemoved);
-  free(Flist);
+
   // }
   /**************************************************************End of Simulate Part*******************/ ///
 
