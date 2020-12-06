@@ -28,75 +28,81 @@ void main(int argc, char **argv)
   PrintCircuit(graph, Max);   //print all members of graph structure
   Npo = countPO(graph, Max);
   Npi = countPI(graph, Max);
-
+  int totalTests = 0;
   //*************************************Run ALL ***********************************************
-  // if (atoi(argv[2])==0)
+  // if (atoi(argv[2]) == 0)
   // {
-      // fout= fopen("c17_erroneous.bench","w");
+    fout = fopen("c17_erroneous.bench", "w");
 
-      // ffau = fopen("faultFile.flt", "w");
-      // fprintf(ffau, "%d /0\n", 2 * Max + Max + 1);
-      // fclose(ffau);
-      // printf("max is %d", Max);
-      // testSet1 = fopen("testSet2.test", "w");
+    ffau = fopen("faultFile.flt", "w");
+    fprintf(ffau, "%d /0\n", 2 * Max + Max + 1);
+    fclose(ffau);
+    printf("max is %d", Max);
+    testSet1 = fopen("testSet3.test", "w");
+    
+    // for(NpatternsToSelect=1; NpatternsToSelect<=4; NpatternsToSelect++)
+    // {
+    NpatternsToSelect = 1;
+    for (iterations = 0; iterations < 3; iterations++)
+    {
+      totalTests=0;
+      // fprintf(testSet1,"Test Set %d \n",iterations+1);
+      mainPart(nodeToReplace, Max, NtestPatterns, newNodeType, Npi, Npo, graph, fout, fisc, patternFile, ftest, testSet1, NpatternsToSelect, &totalTests);
+      printf("totaalPatterns= %d ", totalTests);
+      
+    }
 
-      // for(NpatternsToSelect=1; NpatternsToSelect<=4; NpatternsToSelect++)
-      // {
-      //   for(iterations=0; iterations<500; iterations++) mainPart(nodeToReplace, Max, NtestPatterns, newNodeType, Npi, Npo, graph, fout, fisc, patternFile, ftest, testSet1,NpatternsToSelect);
-
-      // }
-      // fclose(testSet1);
+    // }
+    fclose(testSet1);
   // }
   /****************************************************RUn ALL ***************************************************************/
 
   /******************************************Simulation BEgin****************************************************************/
-   if (atoi(argv[2])==1)
+  // if (atoi(argv[2]) == 1)
+  // {
+    printf("********Simulation started **********\n");
+    Pat = fopen("testSet3.test", "r");
+    totalPatterns = ReadVec(Pat, p_vact);
+    totalFaults = readTotalFaults(graph, Max);
+    struct faultList *Flist;
+
+    int k;
+
+
+    fclose(Pat);
+
+    fwrite = fopen("outputs.txt", "w");
+
+    int lineStart = 0;
+    int lineEnd = 0;
+
+    int testSet = 1;
+    // while (lineEnd < 10 * totalFaults * 2)
+    while (lineEnd < totalTests * 3)
     {
-  printf("********Simulation started **********\n");
-  Pat = fopen("testSet2.test", "r");
-  totalPatterns = ReadVec(Pat, p_vact);
-  totalFaults= readTotalFaults(graph,Max);
-  // totalFaults=30;
-  struct faultList *Flist;
+      struct faultList *faultsToBeRemoved = (struct faultList *)malloc(sizeof(struct faultList));
+      struct faultList *completedFaults = (struct faultList *)malloc(sizeof(struct faultList));
+      Flist = (struct faultList *)malloc(range(lineStart, totalTests) * Npo * sizeof(struct faultList));
 
-  int k;
+      for (k = 0; k < range(lineEnd, totalTests) * Npo; k++)
+      {
+        InitializeFaultList(Flist, k);
+      }
 
-  // faultList Flist[60];
-  fclose(Pat);
+      InitializeFaultList(faultsToBeRemoved, 0);
+      InitializeFaultList(completedFaults, 0);
 
-  fwrite = fopen("outputs.txt", "w");
-  
-
-  int lineStart = 0;
-  int lineEnd = 0;
-  
-  int testSet = 1;
-
-  while (lineEnd < 10 * totalFaults * 500)
-  {
-    struct faultList *faultsToBeRemoved = (struct faultList *)malloc(sizeof(struct faultList));
-    struct faultList *completedFaults = (struct faultList *)malloc(sizeof(struct faultList));
-    Flist = (struct faultList *)malloc(range(lineStart, totalFaults) * Npo * sizeof(struct faultList));
+      lineEnd = lineEnd + range(lineEnd, totalTests);
     
-    for (k = 0; k < range(lineEnd, totalFaults)* Npo; k++)
-    {
-      InitializeFaultList(Flist, k);
+      runSimulate(Max, totalPatterns, graph, p_vact, fwrite, Flist, faultsToBeRemoved, completedFaults, lineStart, lineEnd, testSet, Npo * totalTests, totalFaults);
+      // printf("Start %d End %d\n", lineStart,lineEnd);
+      lineStart = lineEnd;
+      testSet++;
+      free(faultsToBeRemoved);
+      free(Flist);
+      
     }
-    
-    InitializeFaultList(faultsToBeRemoved,0);
-    InitializeFaultList(completedFaults,0);
-    
-    lineEnd = lineEnd + range(lineEnd, totalFaults);
-
-    
-    runSimulate(Max, totalPatterns, graph, p_vact, fwrite, Flist, faultsToBeRemoved,completedFaults, lineStart, lineEnd, testSet, Npo*range(lineStart,totalFaults),totalFaults);
-    // printf("Start %d End %d\n", lineStart,lineEnd);
-    lineStart = lineEnd;
-    testSet++;
-    free(faultsToBeRemoved);
-    free(Flist);
-  }
-  
+  // }
   /**************************************************************End of Simulate Part*******************/ ///
 
   // fclose(fout);

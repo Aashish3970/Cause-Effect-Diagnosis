@@ -445,14 +445,15 @@ int countPO(NODE *graph, int Max)
 
 int readTotalFaults(NODE *graph, int Max)
 {
-  int i,N=0,G=0, faultcount=0;
-  for(i=0; i<=Max;i++){
-    if(graph[i].Type == NAND ||graph[i].Type == NOR || graph[i].Type == XOR ||graph[i].Type == XNOR|| graph[i].Type == AND || graph[i].Type == OR) N++;
-    else if (graph[i].Type== NOT ||graph[i].Type == BUFF) G++;
-
-    
+  int i, N = 0, G = 0, faultcount = 0;
+  for (i = 0; i <= Max; i++)
+  {
+    if (graph[i].Type == NAND || graph[i].Type == NOR || graph[i].Type == XOR || graph[i].Type == XNOR || graph[i].Type == AND || graph[i].Type == OR)
+      N++;
+    else if (graph[i].Type == NOT || graph[i].Type == BUFF)
+      G++;
   }
-  return 5*N+G;
+  return 5 * N + G;
 }
 
 const char *gateType(int Type)
@@ -572,22 +573,23 @@ int CompletedAlready(faultList *completedFaults, int value)
   if (completedFaults->opFaults != NULL)
   {
     struct LIST *head = completedFaults->opFaults;
-    while (head!= NULL)
+    while (head != NULL)
     {
       if (head->id == value)
       {
         return 1;
       }
       head = head->next;
-    }  
+    }
   }
   return 0;
 }
 
-int randomGen(int range){
-    int num;
-    num = rand() % range;
-    return num;
+int randomGen(int range)
+{
+  int num;
+  num = rand() % range;
+  return num;
 }
 /*******************Function To Read vector File**********************************************************/
 int ReadVec(FILE *Pat, PATTERN *p_vect)
@@ -609,7 +611,7 @@ int ReadVec(FILE *Pat, PATTERN *p_vect)
   return a;
 }
 
-int simulate(int Tgat, int totalPatterns, NODE *node, PATTERN *p_vect, FILE *fwrite, int nodeToReplace, int newNodeType, int p_vectLine, char writeToFile[26][100], faultList *Flist, int R)
+int simulate(int Tgat, int totalPatterns, NODE *node, PATTERN *p_vect, FILE *fwrite, int nodeToReplace, int newNodeType, int p_vectLine, faultList *Flist, int R)
 {
   int node_Line;
   LIST *temp;
@@ -620,7 +622,7 @@ int simulate(int Tgat, int totalPatterns, NODE *node, PATTERN *p_vect, FILE *fwr
   totalOutputs = countPO(node, Tgat);
   int originalType;
   char faultList[1000] = "";
-  char faultsDetected[10] = "";
+  // char faultsDetected[10] = "";
 
   int a = 0, count = 0, faultNumber = 0, opNode = 0, l;
 
@@ -675,7 +677,7 @@ int simulate(int Tgat, int totalPatterns, NODE *node, PATTERN *p_vect, FILE *fwr
       node[node_Line].Type = newNodeType;
     }
 
-    if (node[node_Line].Nfi != 0)
+    if (node[node_Line].Fin != NULL)
     {
       temp = node[node_Line].Fin;
       x = node[temp->id].Fval;
@@ -712,13 +714,9 @@ int simulate(int Tgat, int totalPatterns, NODE *node, PATTERN *p_vect, FILE *fwr
       if (node[node_Line].Cval != node[node_Line].Fval)
       {
         int faultId = 0;
-        bzero(faultsDetected, 10);
         concat(nodeToReplace, newNodeType, &faultId);
-        // InsertList(&Flist[FlistNode].opFaults, faultId);
         InsertList(&Flist[FlistNode].opFaults, faultId);
         Flist[FlistNode].length += 1;
-        sprintf(faultsDetected, "%d ", faultId);
-        strcat(writeToFile[opNode], faultsDetected);
       }
       opNode++;
       FlistNode++;
@@ -816,7 +814,7 @@ void copyFile(FILE *fisc, NODE *graph, FILE *fout, int Max, int Npo, int nodeToR
         else if (graph[temp->id].Type == 10)
         {
           if (graph[graph[temp->id].Fin->id].Nfi == 0)
-            sprintf(add_2, "%d", graph[temp->id].Fin->id); //added later
+            sprintf(add_2, "%d", graph[temp->id].Fin->id);
           else
             sprintf(add_2, "%d", graph[temp->id].Fin->id + Max);
         }
@@ -934,7 +932,7 @@ void selectRandomPattern(struct Node *patternHead, FILE *patternFile, FILE *test
   }
 }
 
-void mainPart(int nodeToReplace, int Max, int NtestPatterns, int newNodeType, int Npi, int Npo, NODE *graph, FILE *fout, FILE *fisc, FILE *patternFile, FILE *ftest, FILE *testSet1, int NpatternsToSelect)
+void mainPart(int nodeToReplace, int Max, int NtestPatterns, int newNodeType, int Npi, int Npo, NODE *graph, FILE *fout, FILE *fisc, FILE *patternFile, FILE *ftest, FILE *testSet1, int NpatternsToSelect, int *totalTestPatterns)
 {
   int gateType;
   int *arr;
@@ -953,13 +951,13 @@ void mainPart(int nodeToReplace, int Max, int NtestPatterns, int newNodeType, in
       {
         newNodeType = arr[k];
         copyFile(fisc, graph, fout, Max, Npo, nodeToReplace, newNodeType);
-        run(patternFile, ftest, testSet1, Npi, Max, NtestPatterns, NpatternsToSelect);
+        run(patternFile, ftest, testSet1, Npi, Max, NtestPatterns, NpatternsToSelect, &totalTestPatterns);
         k++;
       }
     }
   }
 }
-void run(FILE *patternFile, FILE *ftest, FILE *testSet1, int Npi, int Max, int NtestPatterns, int NpatternsToSelect)
+void run(FILE *patternFile, FILE *ftest, FILE *testSet1, int Npi, int Max, int NtestPatterns, int NpatternsToSelect, int **totalTestPatterns)
 {
   struct Node *head;
 
@@ -973,33 +971,29 @@ void run(FILE *patternFile, FILE *ftest, FILE *testSet1, int Npi, int Max, int N
   patternFile = fopen("TestPatterns.test", "r");
 
   if (NtestPatterns != 0)
+  {
     selectRandomPattern(head, patternFile, testSet1, NtestPatterns, Npi, NpatternsToSelect);
+    **totalTestPatterns = **totalTestPatterns + 1;
+  }
   fclose(patternFile);
 }
 
 void runSimulate(int Max, int totalPatterns, NODE *graph, PATTERN *p_vect, FILE *fwrite, faultList *Flist, faultList *faultsToBeRemoved, faultList *completedFaults, int lineStart, int lineEnd, int testSet, int R, int totalFaults)
 {
-  
+
   int nodeToReplace = 0, newNodeType = 0;
   int p_vectLine = 0, l;
   int *arr;
   int k = 0;
 
   int totalOutputs = countPO(graph, Max);
-  char faultDetected[26][100]; //2 output lines //26 c880
+  int i = 0;
   int range;
 
   int testSetCount;
-  // while (lineEnd != 150000)
-  // {
   
   for (p_vectLine = lineStart; p_vectLine < lineEnd; ++p_vectLine)
   {
-    for (l = 0; l < 26; l++) //2 c17, 26 c880
-    {
-      bzero(faultDetected[l], 100);
-    }
-
     for (nodeToReplace = 0; nodeToReplace <= Max; nodeToReplace++)
     {
       k = 0;
@@ -1010,7 +1004,7 @@ void runSimulate(int Max, int totalPatterns, NODE *graph, PATTERN *p_vect, FILE 
         while (arr[k] != 0)
         {
           newNodeType = arr[k];
-          simulate(Max, totalPatterns, graph, p_vect, fwrite, nodeToReplace, newNodeType, p_vectLine, faultDetected, Flist, R);
+          simulate(Max, totalPatterns, graph, p_vect, fwrite, nodeToReplace, newNodeType, p_vectLine,Flist, R);
           k++;
         }
       }
@@ -1019,9 +1013,11 @@ void runSimulate(int Max, int totalPatterns, NODE *graph, PATTERN *p_vect, FILE 
 
   int lengthOfList = 0;
 
-  // int selectedFault = Flist[0].opFaults->id;
   int *selectedFault = (int *)malloc(totalFaults * sizeof(int));
-
+  int sf1;
+  for(sf1=0; sf1<totalFaults;sf1++){
+    selectedFault[sf1]=0;
+  }
   int p = 0;
   int resolution = 0;
   int a, faultCount = 0;
@@ -1030,10 +1026,8 @@ void runSimulate(int Max, int totalPatterns, NODE *graph, PATTERN *p_vect, FILE 
   Flist[a].opFaults;
   int minRes = 100, avgRes = 0, maxRes = 1;
   struct LIST *head;
-  
-  
-  
-  while (selectedFault[totalFaults-1] == 0)
+
+  while (selectedFault[totalFaults - 1] == 0)
   {
 
     head = Flist[faultCount].opFaults;
@@ -1042,42 +1036,37 @@ void runSimulate(int Max, int totalPatterns, NODE *graph, PATTERN *p_vect, FILE 
     {
       if (p >= totalFaults)
         break;
-      // if (!ExistAlready(selectedFault, head->id))
       selectedFault[p] = head->id;
-      // else
-      //   p--;
-
+    
       head = head->next;
     }
     begin = p;
     faultCount++;
-    // if (sizeof(selectedFault)/sizeof(selectedFault[0]) >= 30)
-    //     break;
   }
   int temp;
-  
+
   int totalL;
   float resolutionSum = 0;
-  
-  for (totalL = 0; totalL < 15; totalL++) // doing for 15 faults of c17
+
+  for (totalL = 0; totalL < 15; totalL++)
   {
     resolution = 0;
-    
+
     int randomFault;
-    int randN=randomGen(totalFaults);
+    int randN = randomGen(totalFaults);
     randomFault = selectedFault[randN];
-    
-    while (CompletedAlready(completedFaults, randomFault) || randomFault ==0 || randomFault ==102)
+
+    while (CompletedAlready(completedFaults, randomFault) || randomFault == 0)
     {
-      randN=randomGen(totalFaults);
+      randN = randomGen(totalFaults);
       randomFault = selectedFault[randN]; //Choose new random fault everytime
     }
     // printf("Random Fault is %d \n", randomFault);
     // PrintList(completedFaults->opFaults);
-    
+
     InsertList(&completedFaults->opFaults, randomFault);
     int nMarked = 0;
-    for (a = 0; a < totalFaults*totalOutputs; a++)
+    for (a = 0; a < testSet * totalOutputs; a++)
     {
 
       head = Flist[a].opFaults;
@@ -1091,7 +1080,7 @@ void runSimulate(int Max, int totalPatterns, NODE *graph, PATTERN *p_vect, FILE 
           break;
         }
         else
-          Flist[a].Mark = 2; 
+          Flist[a].Mark = 2;
 
         head = head->next;
       }
@@ -1112,7 +1101,7 @@ void runSimulate(int Max, int totalPatterns, NODE *graph, PATTERN *p_vect, FILE 
       struct LIST *head1;
       head1 = faultsToBeRemoved->opFaults;
       int selectedFaultToRemove;
-      if (Flist[a].Mark == 1) 
+      if (Flist[a].Mark == 1)
       {
         while (head1->next != NULL)
         {
@@ -1164,16 +1153,15 @@ void runSimulate(int Max, int totalPatterns, NODE *graph, PATTERN *p_vect, FILE 
       count1 = 0;
       head2 = head2->next;
     }
-   
-    minRes = 1; 
+
+    minRes = 1;
 
     if (resolution > maxRes)
       maxRes = resolution;
     resolutionSum = resolution + resolutionSum;
-    
   }
 
   printf("TestSet %d Min= %d,Max= %d, Avg=%f \n", testSet, minRes, maxRes, resolutionSum / 15);
   free(selectedFault);
-  
+  free(completedFaults);
 }

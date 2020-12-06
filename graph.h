@@ -106,12 +106,12 @@ void copyFile(FILE *, NODE *,FILE *, int,int,int,int );
 struct Node* readTestFile(FILE *, FILE*,int, int*);
 
 void selectRandomPattern(struct Node*,FILE *,FILE *, int,int,int );
-void run(FILE *, FILE* , FILE *, int , int , int ,int);
+void run(FILE *, FILE* , FILE *, int , int , int ,int, int**);
 void createXORbranch(NODE *,LIST *, FILE *,int, int,int);
-void mainPart(int , int , int, int,int, int, NODE*, FILE*,FILE*,FILE*, FILE*, FILE*, int);
+void mainPart(int , int , int, int,int, int, NODE*, FILE*,FILE*,FILE*, FILE*, FILE*, int,int*);
 int ReadVec(FILE *, PATTERN *);
 
-int simulate(int, int, NODE *, PATTERN *, FILE *,int,int, int, char [26][100], faultList*,int);
+int simulate(int, int, NODE *, PATTERN *, FILE *,int,int, int, faultList*,int);
 int charToInt(char);
 char intToChar(int);
 void runSimulate( int, int, NODE *,PATTERN *, FILE *, faultList *, faultList *,faultList *,int, int,int,int,int);
