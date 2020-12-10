@@ -114,12 +114,13 @@ int ReadVec(FILE *, PATTERN *);
 int simulate(int, int, NODE *, PATTERN *, FILE *,int,int, int, faultList*,int);
 int charToInt(char);
 char intToChar(int);
-void runSimulate( int, int, NODE *,PATTERN *, FILE *, faultList *, faultList *,faultList *,int, int,int,int,int);
+void runSimulate( int, int, NODE *,PATTERN *, FILE *, faultList *, faultList *,faultList *,int, int,int,int,int, FILE *);
 void InitializeFaultList(faultList *, int);
 int range (int,int);
 int ExistAlready(int*, int);
 int randomGen(int);
 int readTotalFaults(NODE *,int);
+void InitializeFaultMarks(faultList *, int);
 /***************************************************************************************************************************
  PATTERN Structure Functions
 ****************************************************************************************************************************/
